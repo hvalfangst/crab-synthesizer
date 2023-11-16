@@ -46,6 +46,9 @@ struct WavetableOscillator {
     wave_table: Vec<f32>,
     index: f32,
     index_increment: f32,
+    filter_cutoff: f32,
+    filter_resonance: f32,
+    filtered_value: f32,
 }
 
 
@@ -56,16 +59,30 @@ impl WavetableOscillator {
             wave_table,
             index: 0.0,
             index_increment: 0.0,
+            filter_cutoff: 0.0,
+            filter_resonance: 0.0,
+            filtered_value: 0.0
         };
     }
+
+    fn set_filter_params(&mut self, cutoff: f32, resonance: f32) {
+        self.filter_cutoff = cutoff;
+        self.filter_resonance = resonance;
+    }
+
     fn set_frequency(&mut self, frequency: f32) {
         self.index_increment = frequency * self.wave_table.len() as f32 / self.sample_rate.clone() as f32;
     }
+
     fn get_sample(&mut self) -> f32 {
         let sample = self.lerp();
         self.index += self.index_increment.clone();
         self.index %= self.wave_table.len() as f32;
-        return sample;
+
+        self.filtered_value = (1.0 - self.filter_cutoff.clone()) * self.filtered_value.clone()
+            + self.filter_cutoff.clone() * sample;
+
+        return self.filtered_value.clone();
     }
 
     fn lerp(&self) -> f32 {
@@ -112,7 +129,7 @@ fn main() {
         let mut sample = 0.0;
 
         for a in 1..=5 {
-            let detune_factor = 0.25; d
+            let detune_factor = 0.25;
             let frequency = 220.0 * (a as f32).exp2() * (1.0 + detune_factor * (a.clone() as f32 - 1.0));
             let amplitude = 1.0 / a.clone() as f32;
             sample += amplitude * (2.0 * frequency * (n.clone() as f32) / wave_table_size.clone() as f32).sin();
@@ -123,7 +140,9 @@ fn main() {
 
     let mut state = State{octave: 4};
     let mut oscillator = WavetableOscillator::new(44100, wave_table);
+
     oscillator.set_frequency(Note::A.frequency(state));
+    oscillator.set_filter_params(0.1, 0.1);
 
     let term = Term::stdout();
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
@@ -153,9 +172,24 @@ fn main() {
 
                println!("Note {:?}, Octave {:?}", note, state.clone().octave);
                 oscillator.set_frequency(note.frequency(state.clone()));
+                let new_filter_cutoff = rand::random::<f32>(); // Random value between 0.0 and 1.0
+                let new_filter_resonance = rand::random::<f32>();
+
+                println!(
+                    "Filter parameters modified - Cutoff: {:.2}, Resonance: {:.2}",
+                    new_filter_cutoff, new_filter_resonance
+                );
+
+                oscillator.set_filter_params(new_filter_cutoff, new_filter_resonance);
+
                 let cloned_oscillator = oscillator.clone();
 
+
+
                 let sound_source = cloned_oscillator.take_duration(Duration::from_secs_f32(0.25)).convert_samples::<f32>();
+
+
+
                 let _result = sink.append(sound_source);
             }
             Key::Char('o') | Key::Char('O') => {
