@@ -1,7 +1,9 @@
 use console::Term;
 use rodio::{OutputStream, Sink};
-use crate::synths::wave_table::{populate_wave_table, Octave, WavetableOscillator, Note};
+use crate::synths::wave_table::{populate_wave_table, WavetableOscillator};
 use crate::state::event_loop::execute_event_loop;
+use crate::synths::note::{Note, Octave};
+
 mod synths;mod state;
 
 fn main() {
@@ -20,7 +22,7 @@ fn main() {
     // Create a WavetableOscillator with a sample rate of 44100 hz and our populated wavetable
     let mut oscillator = WavetableOscillator::new(44100, wave_table);
 
-    // Set the initial frequency of the oscillator to the A note in octave 4 (440 hz)
+    // Set the initial frequency of the oscillator to the A note.rs in octave 4 (440 hz)
     oscillator.set_frequency(Note::A.frequency(octave));
 
     // Set the initial filter parameters for the low-pass filter

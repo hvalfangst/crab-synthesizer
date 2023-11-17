@@ -2,7 +2,14 @@ use std::thread;
 use std::time::Duration;
 use console::{Key, Term};
 use rodio::{Sink, source::Source};
-use crate::synths::wave_table::{Octave, WavetableOscillator, Note};
+use crate::Octave;
+use crate::Note;
+use crate::synths::{
+    sine_wave::SineWave,
+    square_wave::SquareWave,
+    saw_wave::SawWave,
+    wave_table::WavetableOscillator,
+};
 
 /// Executes the main event loop, which handles user input and sound generation.
 ///
@@ -38,34 +45,39 @@ pub fn execute_event_loop(mut octave: Octave, oscillator: &mut WavetableOscillat
                     _ => panic!("Unexpected key"),
                 };
 
-                // Print the pressed note and current octave for debugging purposes
+                // Print the pressed note.rs and current octave for debugging purposes
                 println!("Note {:?}, Octave {:?}", note, octave.clone().value);
 
-                // Set the oscillator frequency to correspond to the pressed note in the current octave
-                oscillator.set_frequency(note.frequency(octave.clone()));
+                let source = SawWave::new(note.clone().frequency(octave)).take_duration(Duration::from_secs_f32(0.25)).amplify(0.20);
 
-                // Generate random filter parameters and assign these to the oscillator if filter is active
-                if oscillator.is_filter_active() {
-                    // Generate random values for the low-pass filter parameters
-                    let new_filter_cutoff = rand::random::<f32>();
-                    let new_filter_resonance = rand::random::<f32>();
+                // let samples: Vec<f32> = source.clone().into_iter().collect();
+                // println!("Amount Samples: {:?}", samples.len());
 
-                    // Print the modified filter parameters for debugging purposes
-                    println!(
-                        "Filter parameters modified - Cutoff: {:.2}, Resonance: {:.2}",
-                        new_filter_cutoff, new_filter_resonance
-                    );
-
-                    // Set the oscillator filter parameters with our random values
-                    oscillator.set_filter_params(new_filter_cutoff, new_filter_resonance);
-                }
+                // Set the oscillator frequency to correspond to the pressed note.rs in the current octave
+                // oscillator.set_frequency(note.frequency(octave.clone()));
+                //
+                // // Generate random filter parameters and assign these to the oscillator if filter is active
+                // if oscillator.filter_active() {
+                //     // Generate random values for the low-pass filter parameters
+                //     let new_filter_cutoff = rand::random::<f32>();
+                //     let new_filter_resonance = rand::random::<f32>();
+                //
+                //     // Print the modified filter parameters for debugging purposes
+                //     println!(
+                //         "Filter parameters modified - Cutoff: {:.2}, Resonance: {:.2}",
+                //         new_filter_cutoff, new_filter_resonance
+                //     );
+                //
+                //     // Set the oscillator filter parameters with our random values
+                //     oscillator.set_filter_params(new_filter_cutoff, new_filter_resonance);
+                // }
 
                 // Clone the oscillator for playback and create a sound source
-                let cloned_oscillator = oscillator.clone();
-                let sound_source = cloned_oscillator.take_duration(Duration::from_secs_f32(0.25));
+                // let cloned_oscillator = oscillator.clone();
+                // let sound_source = cloned_oscillator.take_duration(Duration::from_secs_f32(0.25));
 
                 // Append the sound source to the audio sink for playback
-                let _result = sink.append(sound_source);
+                let _result = sink.append(source);
             }
             Key::Char('o') | Key::Char('O') => {
                 // Reduce the octave value and print the updated value for debugging purposes
