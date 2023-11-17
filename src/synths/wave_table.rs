@@ -183,20 +183,24 @@ impl Source for WavetableOscillator {
 /// * `wave_table_size` - The size of the wavetable to be populated.
 /// * `wave_table` - A mutable reference to the vector that will store the generated samples.
 pub fn populate_wave_table(wave_table_size: usize, wave_table: &mut Vec<f32>) {
+
     // Iterate over each sample index in the wavetable
     for n in 0..wave_table_size {
         let mut sample = 0.0;
 
         // Iterate over harmonics from 1 to 5
         for harmonics in 1..=5 {
+
             // Detune factor to introduce slight detuning for each harmonic
             let detune_factor = 0.25;
 
-            // Calculate frequency and amplitude for the current harmonic
+            // Calculate frequency, considering harmonic index and introducing detuning.
             let frequency = 220.0 * (harmonics as f32).exp2() * (1.0 + detune_factor * (harmonics.clone() as f32 - 1.0));
+
+            // Sets the amplitude inversely proportional to the harmonic index. Lower harmonics have higher amplitudes.
             let amplitude = 1.0 / harmonics.clone() as f32;
 
-            // Generate the sample using a sine wave for the current harmonic
+            // Generate sample by summing scaled sine waves for each harmonic, accumulating to the overall sample.
             sample += amplitude * (2.0 * frequency * (n.clone() as f32) / wave_table_size.clone() as f32).sin();
         }
 
