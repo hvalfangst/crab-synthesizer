@@ -57,6 +57,7 @@ pub struct WavetableOscillator {
     wave_table: Vec<f32>, // The wavetable containing the waveform samples
     index: f32,  // Current position in the wavetable
     index_increment: f32,  // Increment for the wavetable position based on frequency
+    filter_active: bool, // Whether or not the filter has been activated
     filter_cutoff: f32, // Cutoff frequency for the low-pass filter
     filter_resonance: f32,  // Resonance parameter for the low-pass filter
     filtered_value: f32,  // Output of the low-pass filter
@@ -69,9 +70,26 @@ impl WavetableOscillator {
             wave_table,
             index: 0.0,
             index_increment: 0.0,
+            filter_active: false,
             filter_cutoff: 0.0,
             filter_resonance: 0.0,
             filtered_value: 0.0,
+        }
+    }
+
+    /// Checks whether filter is active
+    pub fn is_filter_active(&mut self) -> bool {
+        self.filter_active.clone()
+    }
+
+    /// Activates/deactivates the low-pass filter
+    pub fn modify_filter(&mut self) {
+        if self.filter_active == false {
+            println!("Low-pass filter has been activated");
+            self.filter_active = true;
+        } else {
+            println!("Low-pass filter has been deactivated");
+            self.filter_active = false;
         }
     }
 
@@ -89,14 +107,22 @@ impl WavetableOscillator {
     /// Gets the next sample from the oscillator.
     pub fn get_sample(&mut self) -> f32 {
         let sample = self.linear_interpolation();
+
         self.index += self.index_increment.clone();
         self.index %= self.wave_table.len() as f32;
 
-        // Apply low-pass filter
-        self.filtered_value =
-            (1.0 - self.filter_cutoff.clone()) * self.filtered_value.clone() + self.filter_cutoff.clone() * sample;
+        // Only apply low-pass filter if it is indeed active
+        if self.filter_active {
+            self.filtered_value = sample * self.low_pass_filter();
+            self.filtered_value.clone()
+        } else {
+            sample
+        }
+    }
 
-        self.filtered_value.clone()
+    /// Low-pass filter implementation
+    fn low_pass_filter(&self) -> f32 {
+        ( (1.0 - self.filter_cutoff.clone()) * self.filtered_value.clone()) + self.filter_cutoff.clone()
     }
 
     /// Linear interpolation between two adjacent samples in the wavetable.
@@ -183,8 +209,12 @@ impl Source for WavetableOscillator {
 /// * `wave_table_size` - The size of the wavetable to be populated.
 /// * `wave_table` - A mutable reference to the vector that will store the generated samples.
 pub fn populate_wave_table(wave_table_size: usize, wave_table: &mut Vec<f32>) {
+    wave_table_one(wave_table_size, wave_table)
+}
 
-    // Iterate over each sample index in the wavetable
+fn wave_table_one(wave_table_size: usize, wave_table: &mut Vec<f32>) {
+
+// Iterate over each sample index in the wavetable
     for n in 0..wave_table_size {
         let mut sample = 0.0;
 

@@ -44,18 +44,21 @@ pub fn execute_event_loop(mut octave: Octave, oscillator: &mut WavetableOscillat
                 // Set the oscillator frequency to correspond to the pressed note in the current octave
                 oscillator.set_frequency(note.frequency(octave.clone()));
 
-                // Generate random values for the low-pass filter parameters
-                let new_filter_cutoff = rand::random::<f32>();
-                let new_filter_resonance = rand::random::<f32>();
+                // Generate random filter parameters and assign these to the oscillator if filter is active
+                if oscillator.is_filter_active() {
+                    // Generate random values for the low-pass filter parameters
+                    let new_filter_cutoff = rand::random::<f32>();
+                    let new_filter_resonance = rand::random::<f32>();
 
-                // Print the modified filter parameters for debugging purposes
-                println!(
-                    "Filter parameters modified - Cutoff: {:.2}, Resonance: {:.2}",
-                    new_filter_cutoff, new_filter_resonance
-                );
+                    // Print the modified filter parameters for debugging purposes
+                    println!(
+                        "Filter parameters modified - Cutoff: {:.2}, Resonance: {:.2}",
+                        new_filter_cutoff, new_filter_resonance
+                    );
 
-                // Set the oscillator filter parameters with our random values
-                oscillator.set_filter_params(new_filter_cutoff, new_filter_resonance);
+                    // Set the oscillator filter parameters with our random values
+                    oscillator.set_filter_params(new_filter_cutoff, new_filter_resonance);
+                }
 
                 // Clone the oscillator for playback and create a sound source
                 let cloned_oscillator = oscillator.clone();
@@ -76,6 +79,9 @@ pub fn execute_event_loop(mut octave: Octave, oscillator: &mut WavetableOscillat
                 println!("Octave has been increased from {:?} to {:?}", octave.value, new_octave);
                 octave.value = new_octave;
             }
+            Key::Char('f') | Key::Char('F') => {
+                oscillator.modify_filter();
+            }
             Key::Char('z') | Key::Char('Z') => {
                 // Quit the program
                 println!("Quitting...");
@@ -83,7 +89,7 @@ pub fn execute_event_loop(mut octave: Octave, oscillator: &mut WavetableOscillat
             }
             _ => {
                 // Print a message for invalid keys
-                println!("Invalid key. Press 'QWERTY' to play, 'O/P' to modify octave and  'Z' to quit.");
+                println!("Invalid key. Press 'QWERTY' to play, 'O/P' to modify octave. F to modify filter and 'Z' to quit.");
             }
         }
 
