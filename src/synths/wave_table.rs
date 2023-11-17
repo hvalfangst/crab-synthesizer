@@ -101,15 +101,42 @@ impl WavetableOscillator {
 
     /// Linear interpolation between two adjacent samples in the wavetable.
     fn linear_interpolation(&self) -> f32 {
+        // Convert the current index to an integer (truncating the decimal part)
         let truncated_index = self.index.clone() as usize;
+
+        // Calculate the index of the next sample in the wavetable (wrapping around if necessary)
         let next_index = (truncated_index + 1) % self.wave_table.len();
+
+        // Calculate the weight for the next index based on the decimal part of the current index
         let next_index_weight = self.index.clone() - truncated_index.clone() as f32;
+
+        // Calculate the weight for the truncated index
         let truncated_index_weight = 1.0 - next_index_weight;
 
         // Linear interpolation formula
-        truncated_index_weight * self.wave_table[truncated_index.clone()].clone()
-            + next_index_weight.clone() * self.wave_table[next_index].clone()
+        let interpolated_value = truncated_index_weight * self.wave_table[truncated_index.clone()].clone()
+            + next_index_weight.clone() * self.wave_table[next_index].clone();
+
+        // Example:
+
+        // vec![0.0, 0.2, 0.4, 0.6, 0.8, 1.0] (6 elements)
+
+        // Assuming the current self.index is '2.3':
+
+        //  truncated_index becomes 2
+        //  next_index becomes 3 due to ((2 + 1) % 6)
+
+        // That is; we wish to insert a value between '0.4' (index 2) and '0.6' (index 3)
+
+        // next_index_weight becomes 0.3
+        // truncated_index_weight becomes 0.7 due to (1.0 - 0.3)
+
+        // The linear interpolation formula then calculates the interpolated value:
+        //      (truncated_index_weight *  wave_table[truncated_index]) + (next_index_weight * wavetable[next_index])
+        //      (0.7                    *  0.4    =   0.28            ) + (0.3               * 0.6     =    0.18    ) => (0.28 + 0.18) = 0.46
+        interpolated_value
     }
+
 }
 
 /// Implementation of the `Iterator` trait for the `WavetableOscillator`. This allows instances of `WavetableOscillator` to be used as iterators, generating a sequence of audio samples.
