@@ -3,6 +3,7 @@ use std::f32::consts::PI;
 use std::time::Duration;
 
 const MONO: u16 = 1;
+const SAMPLE_RATE: f32 = 48000.0;
 
 #[derive(Clone, Debug)]
 pub struct SineWave {
@@ -41,7 +42,7 @@ impl Source for SineWave {
     }
 
     fn sample_rate(&self) -> u32 {
-        48000
+        SAMPLE_RATE as u32
     }
 
     fn total_duration(&self) -> Option<Duration> {
@@ -54,7 +55,7 @@ impl Source for SineWave {
 /// 't' is time in seconds in relation to the sample rate (ie 1/48k)
 pub fn calculate_sine(frequency: f32, num_sample: usize) -> f32 {
     // Calculate time in seconds based on the sample number and the sample rate
-    let time: f32 = num_sample.clone() as f32 / 48000.0;
+    let time: f32 = num_sample.clone() as f32 / SAMPLE_RATE;
 
     // Calculate angular frequency (2πf)
     let angular_frequency: f32 = 2.0 * PI * frequency.clone();

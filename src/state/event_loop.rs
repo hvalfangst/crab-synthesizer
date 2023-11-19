@@ -3,13 +3,11 @@ use std::time::Duration;
 use console::{Key, Term};
 use rodio::{Sink, source::Source};
 use crate::Octave;
-use crate::Note;
-use crate::synths::{
-    sine_wave::SineWave,
-    square_wave::SquareWave,
-    saw_wave::SawWave,
-    wave_table::WavetableOscillator,
-};
+use crate::synths::{sine_wave::SineWave, square_wave::SquareWave, saw_wave::SawWave, note::Note, Waveform};
+
+const FREQ_NOT_SET: f32 = 666.6;
+const DURATION: f32 = 0.25;
+const AMPLITUDE: f32 = 0.20;
 
 /// Executes the main event loop, which handles user input and sound generation.
 ///
@@ -19,7 +17,9 @@ use crate::synths::{
 /// * `oscillator` - The wavetable oscillator responsible for generating audio samples.
 /// * `term` - The console terminal for user input.
 /// * `sink` - The audio sink for playback.
-pub fn execute_event_loop(mut octave: Octave, oscillator: &mut WavetableOscillator, term: Term, sink: Sink) {
+pub fn execute_event_loop(mut octave: Octave, term: Term, sink: Sink) {
+    let mut current_waveform: Option<Waveform> = None;
+
     loop {
         // Read a key from the terminal
         let key = term.read_key().unwrap();
@@ -48,33 +48,24 @@ pub fn execute_event_loop(mut octave: Octave, oscillator: &mut WavetableOscillat
                 // Print the pressed note.rs and current octave for debugging purposes
                 println!("Note {:?}, Octave {:?}", note, octave.clone().value);
 
-                let source = SawWave::new(note.clone().frequency(octave)).take_duration(Duration::from_secs_f32(0.25)).amplify(0.20);
+                // Initialize Synth based on currently Enum
+                let synth = match current_waveform {
+                    Some(Waveform::SQUARE) => {
+                        let square_wave = SquareWave::new(note.clone().frequency(octave));
+                        Box::new(square_wave) as Box<dyn Source<Item = f32> + 'static + Send>
+                    }
+                    Some(Waveform::SAW) => {
+                        let saw_wave = SawWave::new(note.clone().frequency(octave));
+                        Box::new(saw_wave) as Box<dyn Source<Item = f32> + 'static + Send>
+                    }
+                    _ => {
+                        let sine_wave = SineWave::new(note.clone().frequency(octave));
+                        Box::new(sine_wave) as Box<dyn Source<Item = f32> + 'static + Send>
+                    }
+                };
 
-                // let samples: Vec<f32> = source.clone().into_iter().collect();
-                // println!("Amount Samples: {:?}", samples.len());
-
-                // Set the oscillator frequency to correspond to the pressed note.rs in the current octave
-                // oscillator.set_frequency(note.frequency(octave.clone()));
-                //
-                // // Generate random filter parameters and assign these to the oscillator if filter is active
-                // if oscillator.filter_active() {
-                //     // Generate random values for the low-pass filter parameters
-                //     let new_filter_cutoff = rand::random::<f32>();
-                //     let new_filter_resonance = rand::random::<f32>();
-                //
-                //     // Print the modified filter parameters for debugging purposes
-                //     println!(
-                //         "Filter parameters modified - Cutoff: {:.2}, Resonance: {:.2}",
-                //         new_filter_cutoff, new_filter_resonance
-                //     );
-                //
-                //     // Set the oscillator filter parameters with our random values
-                //     oscillator.set_filter_params(new_filter_cutoff, new_filter_resonance);
-                // }
-
-                // Clone the oscillator for playback and create a sound source
-                // let cloned_oscillator = oscillator.clone();
-                // let sound_source = cloned_oscillator.take_duration(Duration::from_secs_f32(0.25));
+                // Create Source from our Synth
+                let source = synth.take_duration(Duration::from_secs_f32(DURATION)).amplify(AMPLITUDE);
 
                 // Append the sound source to the audio sink for playback
                 let _result = sink.append(source);
@@ -92,7 +83,12 @@ pub fn execute_event_loop(mut octave: Octave, oscillator: &mut WavetableOscillat
                 octave.value = new_octave;
             }
             Key::Char('f') | Key::Char('F') => {
-                oscillator.modify_filter();
+                current_waveform = match current_waveform {
+                    Some(Waveform::SINE) => Some(Waveform::SQUARE),
+                    Some(Waveform::SQUARE) => Some(Waveform::SAW),
+                    _ => Some(Waveform::SINE)
+                };
+                println!("Current Waveform was changed to {:?}", current_waveform)
             }
             Key::Char('z') | Key::Char('Z') => {
                 // Quit the program

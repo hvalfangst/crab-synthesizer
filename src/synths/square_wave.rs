@@ -3,6 +3,7 @@ use std::time::Duration;
 use crate::synths::sine_wave::calculate_sine;
 
 const MONO: u16 = 1;
+const SAMPLE_RATE: f32 = 48000.0;
 
 #[derive(Clone, Debug)]
 pub struct SquareWave {
@@ -44,7 +45,7 @@ impl Source for SquareWave {
     }
 
     fn sample_rate(&self) -> u32 {
-        48000
+        SAMPLE_RATE as u32
     }
 
     fn total_duration(&self) -> Option<Duration> {
