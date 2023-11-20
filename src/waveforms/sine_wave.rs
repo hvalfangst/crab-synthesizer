@@ -1,15 +1,15 @@
 use rodio::Source;
 use std::{f32::consts::PI, time::Duration};
-use crate::effects::low_pass_filter::LowPassFilter;
+use crate::{
+    effects::low_pass_filter::LowPassFilter,
+    waveforms::{MONO, SAMPLE_RATE}
+};
 
-const MONO: u16 = 1;
-const SAMPLE_RATE: f32 = 48000.0;
-
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct SineWave {
     freq: f32,
     num_sample: usize,
-    pub(crate) filter: LowPassFilter
+    pub filter: LowPassFilter
 }
 
 impl SineWave {
@@ -17,7 +17,7 @@ impl SineWave {
         SineWave { freq, num_sample: 0, filter: LowPassFilter::new() }
     }
     pub fn generate_sine_wave(&mut self) -> f32 {
-        calculate_sine(self.freq.clone(), self.num_sample.clone())
+        calculate_sine(self.freq, self.num_sample)
     }
 }
 
@@ -30,9 +30,9 @@ impl Iterator for SineWave {
         let sine_wave = self.generate_sine_wave();
 
         // Only apply low-pass filter if it is indeed active
-        if self.filter.filter_active {
+        if self.filter.filter_active() {
             self.filter.filtered_value = sine_wave * self.filter.low_pass_filter();
-            Some(self.filter.filtered_value.clone())
+            Some(self.filter.filtered_value)
         } else {
             Some(sine_wave)
         }
@@ -63,10 +63,10 @@ impl Source for SineWave {
 /// 't' is time in seconds in relation to the sample rate (ie 1/48k)
 pub fn calculate_sine(frequency: f32, num_sample: usize) -> f32 {
     // Calculate time in seconds based on the sample number and the sample rate
-    let time: f32 = num_sample.clone() as f32 / SAMPLE_RATE;
+    let time: f32 = num_sample as f32 / SAMPLE_RATE;
 
     // Calculate angular frequency (2πf)
-    let angular_frequency: f32 = 2.0 * PI * frequency.clone();
+    let angular_frequency: f32 = 2.0 * PI * frequency;
 
     // Calculate the sine wave value using the angular frequency and time
     (angular_frequency * time).sin()

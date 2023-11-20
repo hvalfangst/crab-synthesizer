@@ -1,5 +1,5 @@
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct LowPassFilter {
     pub filter_active: bool, // Whether or not the filter has been activated
     pub filter_cutoff: f32, // Cutoff frequency for the low-pass filter
@@ -18,7 +18,7 @@ impl LowPassFilter {
     }
 
     pub fn filter_active(&mut self) -> bool {
-        self.filter_active.clone()
+        self.filter_active
     }
 
     pub fn modify_filter(&mut self) {
@@ -40,6 +40,6 @@ impl LowPassFilter {
     }
 
     pub fn low_pass_filter(&self) -> f32 {
-        ( (1.0 - self.filter_cutoff.clone()) * self.filtered_value.clone()) + self.filter_cutoff.clone()
+        ( (1.0 - self.filter_cutoff) * self.filtered_value) + self.filter_cutoff
     }
 }

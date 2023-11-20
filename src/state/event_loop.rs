@@ -11,15 +11,14 @@ use crate::{
         Waveform,
         sine_wave::SineWave,
         square_wave::SquareWave,
-        saw_wave::SawWave
+        saw_wave::SawWave,
+        DURATION, AMPLITUDE
+    },
+    effects::{
+        FILTER_CUTOFF_UPPER_BOUND, FILTER_CUTOFF_LOWER_BOUND,
+        FILTER_RESONANCE_UPPER_BOUND, FILTER_RESONANCE_LOWER_BOUND
     }
 };
-
-const DURATION: f32 = 0.25;
-const AMPLITUDE: f32 = 0.20;
-const FILTER_CUTOFF_UPPER_BOUND: f32 = 0.91;
-const FILTER_CUTOFF_LOWER_BOUND: f32 = 0.11;
-
 
 /// Executes the main event loop, which handles user input and sound generation.
 ///
@@ -33,6 +32,7 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
     let mut current_waveform: Option<Waveform> = None;
     let mut filter_active = false;
     let mut filter_cutoff: f32 = 0.0;
+    let mut filter_resonance: f32 = 0.0;
 
     loop {
         // Read a key from the terminal
@@ -68,7 +68,8 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                         let mut square_wave = SquareWave::new(note.frequency(octave));
                         if filter_active {
                             square_wave.filter.modify_filter();
-                            square_wave.filter.filter_cutoff = filter_cutoff;
+                            square_wave.filter.change_cutoff(filter_cutoff);
+                            square_wave.filter.change_resonance(filter_resonance);
                         }
                         Box::new(square_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
@@ -76,7 +77,8 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                         let mut saw_wave = SawWave::new(note.frequency(octave));
                         if filter_active {
                             saw_wave.filter.modify_filter();
-                            saw_wave.filter.filter_cutoff = filter_cutoff;
+                            saw_wave.filter.change_cutoff(filter_cutoff);
+                            saw_wave.filter.change_resonance(filter_resonance);
                         }
                         Box::new(saw_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
@@ -84,7 +86,8 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                         let mut sine_wave = SineWave::new(note.frequency(octave));
                         if filter_active {
                             sine_wave.filter.modify_filter();
-                            sine_wave.filter.filter_cutoff = filter_cutoff;
+                            sine_wave.filter.change_cutoff(filter_cutoff);
+                            sine_wave.filter.change_resonance(filter_resonance);
                         }
                         Box::new(sine_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
@@ -135,6 +138,22 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
             Key::Char('3') => {
                 filter_active = true;
                 println!("Low pass filter has been activated")
+            }
+            Key::Char('4') => {
+                if filter_resonance < FILTER_RESONANCE_UPPER_BOUND {
+                    filter_resonance += 0.1;
+                    println!("Filter resonance has been increased to {:?}", filter_resonance)
+                } else {
+                    println!("Filter resonance is too high: {:?}", filter_resonance)
+                }
+            }
+            Key::Char('5') => {
+                if filter_resonance > FILTER_RESONANCE_LOWER_BOUND {
+                    filter_resonance -= 0.1;
+                    println!("Filter resonance has been reduced to {:?}", filter_resonance)
+                } else {
+                    println!("Filter resonance is too low: {:?}", filter_resonance)
+                }
             }
             Key::Char('z') | Key::Char('Z') => {
                 // Quit the program
