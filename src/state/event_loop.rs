@@ -5,7 +5,6 @@ use rodio::{Sink, source::Source};
 use crate::Octave;
 use crate::synths::{sine_wave::SineWave, square_wave::SquareWave, saw_wave::SawWave, note::Note, Waveform};
 
-const FREQ_NOT_SET: f32 = 666.6;
 const DURATION: f32 = 0.25;
 const AMPLITUDE: f32 = 0.20;
 
@@ -17,7 +16,7 @@ const AMPLITUDE: f32 = 0.20;
 /// * `oscillator` - The wavetable oscillator responsible for generating audio samples.
 /// * `term` - The console terminal for user input.
 /// * `sink` - The audio sink for playback.
-pub fn execute_event_loop<'a>(octave: &'a mut Octave, term: Term, sink: Sink) {
+pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
     let mut current_waveform: Option<Waveform> = None;
 
     loop {
@@ -46,7 +45,7 @@ pub fn execute_event_loop<'a>(octave: &'a mut Octave, term: Term, sink: Sink) {
                 };
 
                 // Print the pressed note.rs and current octave for debugging purposes
-                println!("Note {:?}, Octave {:?}", note, octave.clone().value);
+                println!("Note {:?}, Octave {:?}", note, octave.value);
 
                 // Initialize Synth based on currently Enum
                 let synth = match current_waveform {
