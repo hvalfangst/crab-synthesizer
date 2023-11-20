@@ -20,7 +20,7 @@ impl Note {
     /// # Returns
     ///
     /// The adjusted frequency of the note.rs based on the current octave.
-    pub fn frequency<'a>(self, octave: &'a Octave) -> f32 {
+    pub fn frequency(&self, octave: &Octave) -> f32 {
         let base_frequency = match self {
             Note::A => 440.0,
             Note::B => 493.88,

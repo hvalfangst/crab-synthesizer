@@ -1,9 +1,8 @@
-use std::f32::consts::PI;
 use rodio::Source;
-use std::time::Duration;
-use crate::synths::low_pass_filter::LowPassFilter;
-use crate::synths::sine_wave::calculate_sine;
-
+use std::{f32::consts::PI, time::Duration};
+use crate:: {
+    effects::low_pass_filter::LowPassFilter
+};
 
 const MONO: u16 = 1;
 const SAMPLE_RATE: f32 = 48000.0;
@@ -13,7 +12,7 @@ const AMPLITUDE: f32 = 0.20;
 pub struct SawWave {
     freq: f32,
     num_sample: usize,
-    filter: LowPassFilter
+    pub(crate) filter: LowPassFilter
 }
 
 impl SawWave {
@@ -29,7 +28,7 @@ impl Iterator for SawWave {
         // increment sample counter by 1
         self.num_sample = self.num_sample.wrapping_add(1);
 
-        /// y(t) = 2A/π * arctan( tan ( (πft/a) )
+        // y(t) = 2A/π * arctan( tan ( (πft/a) )
         let time: f32 = self.num_sample.clone() as f32 / SAMPLE_RATE;
         let first_portion: f32 = 2.0 * AMPLITUDE / PI;
         let last_portion: f32 = (PI * self.freq.clone() * time) / AMPLITUDE;

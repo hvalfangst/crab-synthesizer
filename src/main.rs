@@ -1,9 +1,11 @@
 use console::Term;
 use rodio::{OutputStream, Sink};
-use crate::state::event_loop::execute_event_loop;
-use crate::synths::note::Octave;
+use crate::{
+    music_theory::note::Octave,
+    state::event_loop::execute_event_loop,
+};
 
-mod synths;mod state;
+mod waveforms;mod state;mod music_theory; mod effects;
 
 fn main() {
     // Set the initial octave value to 4

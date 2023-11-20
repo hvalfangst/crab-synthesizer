@@ -1,6 +1,7 @@
 use rodio::Source;
 use std::time::Duration;
-use crate::synths::sine_wave::calculate_sine;
+use crate::effects::low_pass_filter::LowPassFilter;
+use crate::waveforms::sine_wave::calculate_sine;
 
 const MONO: u16 = 1;
 const SAMPLE_RATE: f32 = 48000.0;
@@ -9,11 +10,12 @@ const SAMPLE_RATE: f32 = 48000.0;
 pub struct SquareWave {
     freq: f32,
     num_sample: usize,
+    pub(crate) filter: LowPassFilter
 }
 
 impl SquareWave {
     pub fn new(freq: f32) -> SquareWave {
-        SquareWave { freq, num_sample: 0 }
+        SquareWave { freq, num_sample: 0, filter: LowPassFilter::new() }
     }
 }
 
@@ -30,7 +32,13 @@ impl Iterator for SquareWave {
         // Utilize a sign function to normalize our sine wave to [1.0, -1.0 or 0.0]
         let square_wave: f32 = sgn(sine_wave);
 
-        Some(square_wave)
+        // Only apply low-pass filter if it is indeed active
+        if self.filter.filter_active {
+            self.filter.filtered_value = square_wave * self.filter.low_pass_filter();
+            Some(self.filter.filtered_value.clone())
+        } else {
+            Some(square_wave)
+        }
     }
 }
 

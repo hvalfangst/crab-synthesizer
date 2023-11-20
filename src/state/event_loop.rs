@@ -2,11 +2,24 @@ use std::thread;
 use std::time::Duration;
 use console::{Key, Term};
 use rodio::{Sink, source::Source};
-use crate::Octave;
-use crate::synths::{sine_wave::SineWave, square_wave::SquareWave, saw_wave::SawWave, note::Note, Waveform};
+use crate::{
+    music_theory::{
+        note::Note,
+        note::Octave
+    },
+    waveforms::{
+        Waveform,
+        sine_wave::SineWave,
+        square_wave::SquareWave,
+        saw_wave::SawWave
+    }
+};
 
 const DURATION: f32 = 0.25;
 const AMPLITUDE: f32 = 0.20;
+const FILTER_CUTOFF_UPPER_BOUND: f32 = 0.91;
+const FILTER_CUTOFF_LOWER_BOUND: f32 = 0.11;
+
 
 /// Executes the main event loop, which handles user input and sound generation.
 ///
@@ -18,6 +31,8 @@ const AMPLITUDE: f32 = 0.20;
 /// * `sink` - The audio sink for playback.
 pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
     let mut current_waveform: Option<Waveform> = None;
+    let mut filter_active = false;
+    let mut filter_cutoff: f32 = 0.0;
 
     loop {
         // Read a key from the terminal
@@ -50,15 +65,27 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                 // Initialize Synth based on currently Enum
                 let synth = match current_waveform {
                     Some(Waveform::SQUARE) => {
-                        let square_wave = SquareWave::new(note.frequency(octave));
+                        let mut square_wave = SquareWave::new(note.frequency(octave));
+                        if filter_active {
+                            square_wave.filter.modify_filter();
+                            square_wave.filter.filter_cutoff = filter_cutoff;
+                        }
                         Box::new(square_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
                     Some(Waveform::SAW) => {
-                        let saw_wave = SawWave::new(note.frequency(octave));
+                        let mut saw_wave = SawWave::new(note.frequency(octave));
+                        if filter_active {
+                            saw_wave.filter.modify_filter();
+                            saw_wave.filter.filter_cutoff = filter_cutoff;
+                        }
                         Box::new(saw_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
                     _ => {
-                        let sine_wave = SineWave::new(note.frequency(octave));
+                        let mut sine_wave = SineWave::new(note.frequency(octave));
+                        if filter_active {
+                            sine_wave.filter.modify_filter();
+                            sine_wave.filter.filter_cutoff = filter_cutoff;
+                        }
                         Box::new(sine_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
                 };
@@ -88,6 +115,26 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                     _ => Some(Waveform::SINE)
                 };
                 println!("Current Waveform was changed to {:?}", current_waveform)
+            }
+            Key::Char('1') => {
+                if filter_cutoff < FILTER_CUTOFF_UPPER_BOUND {
+                    filter_cutoff += 0.1;
+                    println!("Filter cutoff has been increased to {:?}", filter_cutoff)
+                } else {
+                    println!("Filter cutoff is too high: {:?}", filter_cutoff)
+                }
+            }
+            Key::Char('2') => {
+                if filter_cutoff > FILTER_CUTOFF_LOWER_BOUND {
+                    filter_cutoff -= 0.1;
+                    println!("Filter cutoff has been reduced to {:?}", filter_cutoff)
+                } else {
+                    println!("Filter cutoff is too low: {:?}", filter_cutoff)
+                }
+            }
+            Key::Char('3') => {
+                filter_active = true;
+                println!("Low pass filter has been activated")
             }
             Key::Char('z') | Key::Char('Z') => {
                 // Quit the program
