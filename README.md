@@ -33,5 +33,8 @@ Once the application is running, you can interact with it using the following ke
     3: Activate the low-pass filter.
     1: Increase the filter cutoff.
     2: Decrease the filter cutoff.
+    4: Increase the filter resonance.
+    5: Decrease the filter resonance.
+     
 
     Z: Quit the application.

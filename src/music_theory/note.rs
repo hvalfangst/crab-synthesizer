@@ -1,11 +1,10 @@
 
-#[derive(Clone, Copy)]
 pub struct Octave {
     pub value: i32
 }
 
 /// Enumerates musical notes A, B, C, D, E, F, and G.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Note {
     A, B, C, D, E, F, G,
 }

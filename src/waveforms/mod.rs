@@ -7,7 +7,7 @@ const SAMPLE_RATE: f32 = 48000.0;
 pub const AMPLITUDE: f32 = 0.20;
 pub const DURATION: f32 = 0.25;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Waveform {
     SINE,
     SQUARE,
