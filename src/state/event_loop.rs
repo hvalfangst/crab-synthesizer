@@ -50,15 +50,15 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                 // Initialize Synth based on currently Enum
                 let synth = match current_waveform {
                     Some(Waveform::SQUARE) => {
-                        let square_wave = SquareWave::new(note.clone().frequency(octave));
+                        let square_wave = SquareWave::new(note.frequency(octave));
                         Box::new(square_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
                     Some(Waveform::SAW) => {
-                        let saw_wave = SawWave::new(note.clone().frequency(octave));
+                        let saw_wave = SawWave::new(note.frequency(octave));
                         Box::new(saw_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
                     _ => {
-                        let sine_wave = SineWave::new(note.clone().frequency(octave));
+                        let sine_wave = SineWave::new(note.frequency(octave));
                         Box::new(sine_wave) as Box<dyn Source<Item = f32> + 'static + Send>
                     }
                 };
