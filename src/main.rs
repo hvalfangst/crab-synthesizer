@@ -7,7 +7,7 @@ mod synths;mod state;
 
 fn main() {
     // Set the initial octave value to 4
-    let octave = Octave { value: 4 };
+    let mut octave = Octave { value: 4 };
 
     // Initialize a console terminal for user interaction
     let term = Term::stdout();
@@ -17,5 +17,5 @@ fn main() {
     let sink = Sink::try_new(&stream_handle).unwrap();
 
     // Execute the main event loop, which handles user input and associated sound generation
-    execute_event_loop(octave, term, sink);
+    execute_event_loop(&mut octave, term, sink);
 }
