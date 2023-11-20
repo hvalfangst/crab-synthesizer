@@ -142,8 +142,21 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                 break;
             }
             _ => {
-                // Print a message for invalid keys
-                println!("Invalid key. Press 'QWERTY' to play, 'O/P' to modify octave. F to modify filter and 'Z' to quit.");
+                println!("Menu:");
+                println!("  Q - Play Note A");
+                println!("  W - Play Note B");
+                println!("  E - Play Note C");
+                println!("  R - Play Note D");
+                println!("  T - Play Note E");
+                println!("  Y - Play Note F");
+                println!("  U - Play Note G");
+                println!("  O - Decrease Octave");
+                println!("  P - Increase Octave");
+                println!("  F - Change Synth");
+                println!("  3 - Activate Low Pass Filter");
+                println!("  1 - Increase Filter Cutoff");
+                println!("  2 - Decrease Filter Cutoff");
+                println!("  Z - Quit");
             }
         }
 

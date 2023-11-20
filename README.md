@@ -12,10 +12,26 @@
 * console = "0.15.7"
 * rand = "0.8"
 
-## Startup
+## Start
 
-The script "up" builds and runs our application by eexecuting the following:
+The script "up" builds and runs our application by executing the following:
 ```
 1. cargo build
 2. cargo run
 ```
+
+## Usage
+Once the application is running, you can interact with it using the following keys:
+
+    Q, W, E, R, T, Y, U: Play musical notes A, B, C, D, E, F, G respectively.
+
+    O: Decrease the octave.
+    P: Increase the octave.
+
+    F: Change the synthesizer waveform (sine, square, saw).
+
+    3: Activate the low-pass filter.
+    1: Increase the filter cutoff.
+    2: Decrease the filter cutoff.
+
+    Z: Quit the application.
