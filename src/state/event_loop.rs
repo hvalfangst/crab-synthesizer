@@ -64,9 +64,6 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
                 // Draw the updated keyboard layout after the key press
                 keyboard.draw(term);
 
-                // Print the pressed note.rs and current octave for debugging purposes
-            //    println!("Note {:?}, Octave {:?}", note, octave.value);
-
                 // Initialize Synth based on currently Enum
                 let synth = match current_waveform {
                     Some(Waveform::SQUARE) => {
@@ -105,16 +102,18 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
                 let _result = sink.append(source);
             }
             Key::Char('o') | Key::Char('O') => {
-                // Reduce the octave value and print the updated value for debugging purposes
                 let new_octave = &octave.value - 1;
-                println!("Octave has been reduced from {:?} to {:?}", octave.value, new_octave);
                 octave.value = new_octave;
+                keyboard.set_current_octave(&octave.value);
+                term.clear_screen().expect("TODO: panic message");
+                keyboard.draw(term);
             }
             Key::Char('p') | Key::Char('P') => {
-                // Increase the octave value and print the updated value for debugging purposes
                 let new_octave = &octave.value + 1;
-                println!("Octave has been increased from {:?} to {:?}", octave.value, new_octave);
                 octave.value = new_octave;
+                keyboard.set_current_octave(&octave.value);
+                term.clear_screen().expect("TODO: panic message");
+                keyboard.draw(term);
             }
             Key::Char('f') | Key::Char('F') => {
                 current_waveform = match current_waveform {

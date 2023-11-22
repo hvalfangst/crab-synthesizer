@@ -2,6 +2,7 @@ use console::{Key, style, Term};
 
 pub struct Keyboard {
     keys_pressed: [bool; 7],
+    current_octave: i32
 }
 
 impl Keyboard {
@@ -9,6 +10,7 @@ impl Keyboard {
     pub(crate) fn new() -> Self {
         Self {
             keys_pressed: [false; 7],
+            current_octave: 4
         }
     }
 
@@ -37,14 +39,15 @@ impl Keyboard {
         // Draw the keyboard layout
         term.write_line("+---+---+---+---+---+---+---+").unwrap();
         term.write_line(&format!(
-            "| {} | {} | {} | {} | {} | {} | {} |",
+            "| {} | {} | {} | {} | {} | {} | {} | Octave: {}",
             key_styles[0],
             key_styles[1],
             key_styles[2],
             key_styles[3],
             key_styles[4],
             key_styles[5],
-            key_styles[6]
+            key_styles[6],
+            self.current_octave
         ))
             .unwrap();
         term.write_line("+---+---+---+---+---+---+---+").unwrap();
@@ -62,5 +65,9 @@ impl Keyboard {
             Key::Char('u') => self.keys_pressed[6] = true,
             _ => {} // Ignore other key presses
         }
+    }
+
+    pub fn set_current_octave(&mut self, octave: &i32) {
+        self.current_octave = *octave;
     }
 }
