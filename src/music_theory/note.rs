@@ -34,7 +34,7 @@ impl Note {
         let octave_adjusted_frequency = base_frequency * 2.0_f32.powi(octave.value - 4);
 
         // Print the octave-adjusted frequency for debugging purposes
-        println!("Octave adjusted frequency: {:?}", octave_adjusted_frequency);
+        //println!("Octave adjusted frequency: {:?}", octave_adjusted_frequency);
 
         octave_adjusted_frequency
     }

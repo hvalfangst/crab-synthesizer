@@ -29,9 +29,11 @@ impl Iterator for SawWave {
         // y(t) = 2A/π * arctan( tan ( (πft/a) )
         let time: f32 = self.num_sample as f32 / SAMPLE_RATE;
         let first_portion: f32 = 2.0 * AMPLITUDE / PI;
+
         let last_portion: f32 = (PI * self.freq * time) / AMPLITUDE;
         let tan_last_portion: f32 = last_portion.tan();
         let atan_tan_last_portion: f32 = tan_last_portion.atan();
+
         let saw_wave: f32 = first_portion * atan_tan_last_portion;
 
         // Only apply low-pass filter if it is indeed active

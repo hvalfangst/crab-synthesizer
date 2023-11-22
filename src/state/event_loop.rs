@@ -2,23 +2,19 @@ use std::thread;
 use std::time::Duration;
 use console::{Key, Term};
 use rodio::{Sink, source::Source};
-use crate::{
-    music_theory::{
-        note::Note,
-        note::Octave
-    },
-    waveforms::{
-        Waveform,
-        sine_wave::SineWave,
-        square_wave::SquareWave,
-        saw_wave::SawWave,
-        DURATION, AMPLITUDE
-    },
-    effects::{
-        FILTER_CUTOFF_UPPER_BOUND, FILTER_CUTOFF_LOWER_BOUND,
-        FILTER_RESONANCE_UPPER_BOUND, FILTER_RESONANCE_LOWER_BOUND
-    }
-};
+use crate::{music_theory::{
+    note::Note,
+    note::Octave
+}, waveforms::{
+    Waveform,
+    sine_wave::SineWave,
+    square_wave::SquareWave,
+    saw_wave::SawWave,
+    DURATION, AMPLITUDE
+}, effects::{
+    FILTER_CUTOFF_UPPER_BOUND, FILTER_CUTOFF_LOWER_BOUND,
+    FILTER_RESONANCE_UPPER_BOUND, FILTER_RESONANCE_LOWER_BOUND
+}, Keyboard};
 
 /// Executes the main event loop, which handles user input and sound generation.
 ///
@@ -28,7 +24,7 @@ use crate::{
 /// * `oscillator` - The wavetable oscillator responsible for generating audio samples.
 /// * `term` - The console terminal for user input.
 /// * `sink` - The audio sink for playback.
-pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
+pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard, sink: Sink) {
     let mut current_waveform: Option<Waveform> = None;
     let mut filter_active = false;
     let mut filter_cutoff: f32 = 0.0;
@@ -59,8 +55,17 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                     _ => panic!("Unexpected key"),
                 };
 
+                // Draw the initial keyboard layout
+                term.clear_screen().expect("TODO: panic message");
+
+                // Simulate handling a key press (replace this with your actual key press handling logic)
+                keyboard.handle_key_press(key);
+
+                // Draw the updated keyboard layout after the key press
+                keyboard.draw(term);
+
                 // Print the pressed note.rs and current octave for debugging purposes
-                println!("Note {:?}, Octave {:?}", note, octave.value);
+            //    println!("Note {:?}, Octave {:?}", note, octave.value);
 
                 // Initialize Synth based on currently Enum
                 let synth = match current_waveform {
@@ -160,26 +165,10 @@ pub fn execute_event_loop(octave: &mut Octave, term: Term, sink: Sink) {
                 println!("Quitting...");
                 break;
             }
-            _ => {
-                println!("Menu:");
-                println!("  Q - Play Note A");
-                println!("  W - Play Note B");
-                println!("  E - Play Note C");
-                println!("  R - Play Note D");
-                println!("  T - Play Note E");
-                println!("  Y - Play Note F");
-                println!("  U - Play Note G");
-                println!("  O - Decrease Octave");
-                println!("  P - Increase Octave");
-                println!("  F - Change Synth");
-                println!("  3 - Activate Low Pass Filter");
-                println!("  1 - Increase Filter Cutoff");
-                println!("  2 - Decrease Filter Cutoff");
-                println!("  Z - Quit");
-            }
+            _ => {}
         }
 
         // Pause the thread to mitigate CPU overload
-        thread::sleep(Duration::from_millis(50));
+        thread::sleep(Duration::from_millis(10));
     }
 }
