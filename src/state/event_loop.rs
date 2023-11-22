@@ -121,7 +121,10 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
                     Some(Waveform::SQUARE) => Some(Waveform::SAW),
                     _ => Some(Waveform::SINE)
                 };
-                println!("Current Waveform was changed to {:?}", current_waveform)
+
+                keyboard.set_current_waveform(current_waveform.as_ref().unwrap());
+                term.clear_screen().expect("TODO: panic message");
+                keyboard.draw(term);
             }
             Key::Char('1') => {
                 if filter_cutoff < FILTER_CUTOFF_UPPER_BOUND {

@@ -1,8 +1,10 @@
 use console::{Key, style, Term};
+use crate::waveforms::Waveform;
 
 pub struct Keyboard {
     keys_pressed: [bool; 7],
-    current_octave: i32
+    current_octave: i32,
+    current_waveform: Waveform
 }
 
 impl Keyboard {
@@ -10,7 +12,8 @@ impl Keyboard {
     pub(crate) fn new() -> Self {
         Self {
             keys_pressed: [false; 7],
-            current_octave: 4
+            current_octave: 4,
+            current_waveform: Waveform::SINE
         }
     }
 
@@ -39,7 +42,7 @@ impl Keyboard {
         // Draw the keyboard layout
         term.write_line("+---+---+---+---+---+---+---+").unwrap();
         term.write_line(&format!(
-            "| {} | {} | {} | {} | {} | {} | {} | Octave: {}",
+            "| {} | {} | {} | {} | {} | {} | {} | Octave: {}, Waveform: {}",
             key_styles[0],
             key_styles[1],
             key_styles[2],
@@ -47,7 +50,8 @@ impl Keyboard {
             key_styles[4],
             key_styles[5],
             key_styles[6],
-            self.current_octave
+            self.current_octave,
+            self.current_waveform
         ))
             .unwrap();
         term.write_line("+---+---+---+---+---+---+---+").unwrap();
@@ -68,6 +72,10 @@ impl Keyboard {
     }
 
     pub fn set_current_octave(&mut self, octave: &i32) {
-        self.current_octave = *octave;
+        self.current_octave = *octave
+    }
+
+    pub fn set_current_waveform(&mut self, waveform: &Waveform) {
+        self.current_waveform = *waveform
     }
 }
