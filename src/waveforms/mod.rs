@@ -16,7 +16,7 @@ pub enum Waveform {
     SAW
 }
 
-// The Display trait has to be implemented for Waveform for it to be used in formatted strings (see file 'keyboard.rs')
+/// Implements the [Display] trait for [WaveForm]
 impl fmt::Display for Waveform {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

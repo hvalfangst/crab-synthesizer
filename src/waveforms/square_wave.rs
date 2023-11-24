@@ -20,7 +20,7 @@ impl SquareWave {
     }
 }
 
-/// Implementation of the `Iterator` trait for the `SquareWave`.
+/// Implementation of the [Iterator] trait for the [SquareWave]
 impl Iterator for SquareWave {
     type Item = f32;
     fn next(&mut self) -> Option<f32> {
@@ -43,7 +43,7 @@ impl Iterator for SquareWave {
     }
 }
 
-/// Implementation of the `Source` trait for the `SquareWave`.
+/// Implementation of the [Source] trait for the [SquareWave]
 impl Source for SquareWave {
     fn current_frame_len(&self) -> Option<usize> {
         None

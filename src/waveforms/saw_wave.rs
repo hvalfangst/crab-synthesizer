@@ -19,7 +19,7 @@ impl SawWave {
     }
 }
 
-/// Implementation of the `Iterator` trait for the `SawWave`.
+/// Implementation of the [Iterator] trait for the [SawWave]
 impl Iterator for SawWave {
     type Item = f32;
     fn next(&mut self) -> Option<f32> {
@@ -46,7 +46,7 @@ impl Iterator for SawWave {
     }
 }
 
-/// Implementation of the `Source` trait for the `SawWave`.
+/// Implementation of the [Source] trait for the [SawWave]
 impl Source for SawWave {
     fn current_frame_len(&self) -> Option<usize> {
         None

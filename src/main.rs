@@ -19,7 +19,7 @@ fn main() {
 
     // Initialize the audio output stream and sink
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let sink = Sink::try_new(&stream_handle).unwrap();
+    let sink = &mut Sink::try_new(&stream_handle).unwrap();
 
     // Draw the keyboard
     let mut keyboard = Keyboard::new();

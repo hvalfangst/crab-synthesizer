@@ -21,7 +21,7 @@ impl SineWave {
     }
 }
 
-/// Implementation of the `Iterator` trait for the `SineWave`.
+/// Implementation of the [Iterator] trait for the [SineWave]
 impl Iterator for SineWave {
     type Item = f32;
     fn next(&mut self) -> Option<f32> {
@@ -39,7 +39,7 @@ impl Iterator for SineWave {
     }
 }
 
-/// Implementation of the `Source` trait for the `SineWave`.
+/// Implementation of the [Source] trait for the [SineWave]
 impl Source for SineWave {
     fn current_frame_len(&self) -> Option<usize> {
         None

@@ -1,3 +1,4 @@
+use std::fmt;
 
 pub struct Octave {
     pub value: i32
@@ -7,6 +8,22 @@ pub struct Octave {
 #[derive(Debug)]
 pub enum Note {
     A, B, C, D, E, F, G,
+}
+
+
+/// Implements the [Display] trait for [Note]
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Note::A => write!(f, "A"),
+            Note::B => write!(f, "B"),
+            Note::C => write!(f, "C"),
+            Note::D => write!(f, "D"),
+            Note::E => write!(f, "E"),
+            Note::F => write!(f, "F"),
+            _ => write!(f, "G")
+        }
+    }
 }
 
 impl Note {
@@ -31,11 +48,13 @@ impl Note {
         };
 
         // Adjust the base frequency based on the current octave setting
-        let octave_adjusted_frequency = base_frequency * 2.0_f32.powi(octave.value - 4);
-
-        // Print the octave-adjusted frequency for debugging purposes
-        //println!("Octave adjusted frequency: {:?}", octave_adjusted_frequency);
-
-        octave_adjusted_frequency
+        base_frequency * 2.0_f32.powi(octave.value - 4)
     }
+}
+
+/// # Returns
+///
+/// An array containing all note enums [A -> G]
+pub fn get_all_notes() -> [Note; 7] {
+    [Note::A, Note::B, Note::C, Note::D, Note::E, Note::F, Note::G]
 }

@@ -1,4 +1,5 @@
-use console::{Key, style, Term};
+use console::{Key, style, StyledObject, Term};
+use crate::music_theory::note::{get_all_notes, Note};
 use crate::waveforms::Waveform;
 
 pub struct Keyboard {
@@ -8,8 +9,7 @@ pub struct Keyboard {
 }
 
 impl Keyboard {
-    // Create a new Keyboard instance with all keys initially not pressed
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             keys_pressed: [false; 7],
             current_octave: 4,
@@ -17,29 +17,35 @@ impl Keyboard {
         }
     }
 
-    // Draw the keyboard layout with styles based on key presses
+    /// Draw the keyboard layout with styles based on key presses
     pub fn draw(&mut self, term: &mut Term) {
-        // Labels for the keys
-        let key_labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-
-        // Get styles for each key based on its label and pressed state
-        let key_styles = key_labels
+        let notes = get_all_notes();
+        let key_styles = notes
             .iter()
             .enumerate()
             .zip(self.keys_pressed.clone().iter())
-            .map(|((index, &label), &pressed)| {
-                // If the key is pressed, set its pressed state to false and style it accordingly
+            .map(|((index, &ref label), &pressed)| {
                 if pressed {
                     self.keys_pressed[index] = false;
                     style(label).green().on_black()
                 } else {
-                    // If the key is not pressed, style it normally
                     style(label)
                 }
             })
             .collect::<Vec<_>>();
 
-        // Draw the keyboard layout
+        self.draw_keyboard_layout(term, &key_styles);
+    }
+
+
+    /// Draws the keyboard layout on the console with styling based on key presses.
+    ///
+    /// # Arguments
+    ///
+    /// * `term` - A mutable reference to the console `Term` for output.
+    /// * `key_styles` - A vector of `StyledObject` representing the styling of each key.
+    ///
+    fn draw_keyboard_layout(&mut self, term: &mut Term, key_styles: &Vec<StyledObject<&Note>>) {
         term.write_line("+---+---+---+---+---+---+---+").unwrap();
         term.write_line(&format!(
             "| {} | {} | {} | {} | {} | {} | {} | Octave: {}, Waveform: {}",
@@ -57,7 +63,11 @@ impl Keyboard {
         term.write_line("+---+---+---+---+---+---+---+").unwrap();
     }
 
-    // Handle key presses and update the corresponding key state
+    /// Handles key presses and updates the corresponding key state in the keyboard.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The `Key` enum representing the pressed key.
     pub fn handle_key_press(&mut self, key: Key) {
         match key {
             Key::Char('q') => self.keys_pressed[0] = true,

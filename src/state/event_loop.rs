@@ -24,7 +24,7 @@ use crate::{music_theory::{
 /// * `oscillator` - The wavetable oscillator responsible for generating audio samples.
 /// * `term` - The console terminal for user input.
 /// * `sink` - The audio sink for playback.
-pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard, sink: Sink) {
+pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard, sink: &mut Sink) {
     let mut current_waveform: Option<Waveform> = None;
     let mut filter_active = false;
     let mut filter_cutoff: f32 = 0.0;
@@ -43,63 +43,7 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
             | Key::Char('t') | Key::Char('T')
             | Key::Char('y') | Key::Char('Y')
             | Key::Char('u') | Key::Char('U') => {
-                let note = match key {
-                    // Map keys to musical notes
-                    Key::Char('q') | Key::Char('Q') => Note::A,
-                    Key::Char('w') | Key::Char('W') => Note::B,
-                    Key::Char('e') | Key::Char('E') => Note::C,
-                    Key::Char('r') | Key::Char('R') => Note::D,
-                    Key::Char('t') | Key::Char('T') => Note::E,
-                    Key::Char('y') | Key::Char('Y') => Note::F,
-                    Key::Char('u') | Key::Char('U') => Note::G,
-                    _ => panic!("Unexpected key"),
-                };
-
-                // Draw the initial keyboard layout
-                term.clear_screen().expect("TODO: panic message");
-
-                // Simulate handling a key press (replace this with your actual key press handling logic)
-                keyboard.handle_key_press(key);
-
-                // Draw the updated keyboard layout after the key press
-                keyboard.draw(term);
-
-                // Initialize Synth based on currently Enum
-                let synth = match current_waveform {
-                    Some(Waveform::SQUARE) => {
-                        let mut square_wave = SquareWave::new(note.frequency(octave));
-                        if filter_active {
-                            square_wave.filter.modify_filter();
-                            square_wave.filter.change_cutoff(filter_cutoff);
-                            square_wave.filter.change_resonance(filter_resonance);
-                        }
-                        Box::new(square_wave) as Box<dyn Source<Item = f32> + 'static + Send>
-                    }
-                    Some(Waveform::SAW) => {
-                        let mut saw_wave = SawWave::new(note.frequency(octave));
-                        if filter_active {
-                            saw_wave.filter.modify_filter();
-                            saw_wave.filter.change_cutoff(filter_cutoff);
-                            saw_wave.filter.change_resonance(filter_resonance);
-                        }
-                        Box::new(saw_wave) as Box<dyn Source<Item = f32> + 'static + Send>
-                    }
-                    _ => {
-                        let mut sine_wave = SineWave::new(note.frequency(octave));
-                        if filter_active {
-                            sine_wave.filter.modify_filter();
-                            sine_wave.filter.change_cutoff(filter_cutoff);
-                            sine_wave.filter.change_resonance(filter_resonance);
-                        }
-                        Box::new(sine_wave) as Box<dyn Source<Item = f32> + 'static + Send>
-                    }
-                };
-
-                // Create Source from our Synth
-                let source = synth.take_duration(Duration::from_secs_f32(DURATION)).amplify(AMPLITUDE);
-
-                // Append the sound source to the audio sink for playback
-                let _result = sink.append(source);
+                handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, key);
             }
             Key::Char('o') | Key::Char('O') => {
                 let new_octave = &octave.value - 1;
@@ -173,4 +117,66 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
         // Pause the thread to mitigate CPU overload
         thread::sleep(Duration::from_millis(10));
     }
+}
+
+fn handle_musical_notes(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard, sink: &mut Sink,
+                        current_waveform: &mut Option<Waveform>, filter_active: &mut bool,
+                        filter_cutoff: &mut f32, filter_resonance: &mut f32, key: Key) {
+    let note = match key {
+        // Map keys to musical notes
+        Key::Char('q') | Key::Char('Q') => Note::A,
+        Key::Char('w') | Key::Char('W') => Note::B,
+        Key::Char('e') | Key::Char('E') => Note::C,
+        Key::Char('r') | Key::Char('R') => Note::D,
+        Key::Char('t') | Key::Char('T') => Note::E,
+        Key::Char('y') | Key::Char('Y') => Note::F,
+        Key::Char('u') | Key::Char('U') => Note::G,
+        _ => panic!("Unexpected key"),
+    };
+
+    // Draw the initial keyboard layout
+    term.clear_screen().expect("TODO: panic message");
+
+    // Simulate handling a key press (replace this with your actual key press handling logic)
+    keyboard.handle_key_press(key);
+
+    // Draw the updated keyboard layout after the key press
+    keyboard.draw(term);
+
+    // Initialize Synth based on currently Enum
+    let synth = match current_waveform {
+        Some(Waveform::SQUARE) => {
+            let mut square_wave = SquareWave::new(note.frequency(octave));
+            if *filter_active {
+                square_wave.filter.modify_filter();
+                square_wave.filter.change_cutoff(*filter_cutoff);
+                square_wave.filter.change_resonance(*filter_resonance);
+            }
+            Box::new(square_wave) as Box<dyn Source<Item=f32> + 'static + Send>
+        }
+        Some(Waveform::SAW) => {
+            let mut saw_wave = SawWave::new(note.frequency(octave));
+            if *filter_active {
+                saw_wave.filter.modify_filter();
+                saw_wave.filter.change_cutoff(*filter_cutoff);
+                saw_wave.filter.change_resonance(*filter_resonance);
+            }
+            Box::new(saw_wave) as Box<dyn Source<Item=f32> + 'static + Send>
+        }
+        _ => {
+            let mut sine_wave = SineWave::new(note.frequency(octave));
+            if *filter_active {
+                sine_wave.filter.modify_filter();
+                sine_wave.filter.change_cutoff(*filter_cutoff);
+                sine_wave.filter.change_resonance(*filter_resonance);
+            }
+            Box::new(sine_wave) as Box<dyn Source<Item=f32> + 'static + Send>
+        }
+    };
+
+    // Create Source from our Synth
+    let source = synth.take_duration(Duration::from_secs_f32(DURATION)).amplify(AMPLITUDE);
+
+    // Append the sound source to the audio sink for playback
+    let _result = sink.append(source);
 }
