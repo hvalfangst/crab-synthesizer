@@ -11,7 +11,7 @@ use crate::{
 pub struct SquareWave {
     freq: f32,
     num_sample: usize,
-    pub(crate) filter: LowPassFilter
+    pub filter: LowPassFilter
 }
 
 impl SquareWave {

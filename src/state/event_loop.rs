@@ -46,69 +46,30 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
                 handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, key);
             }
             Key::Char('o') | Key::Char('O') => {
-                let new_octave = &octave.value - 1;
-                octave.value = new_octave;
-                keyboard.set_current_octave(&octave.value);
-                term.clear_screen().expect("TODO: panic message");
-                keyboard.draw(term);
+                handle_reduce_octave(octave, term, keyboard);
             }
             Key::Char('p') | Key::Char('P') => {
-                let new_octave = &octave.value + 1;
-                octave.value = new_octave;
-                keyboard.set_current_octave(&octave.value);
-                term.clear_screen().expect("TODO: panic message");
-                keyboard.draw(term);
+                handle_increase_octave(octave, term, keyboard);
             }
             Key::Char('f') | Key::Char('F') => {
-                current_waveform = match current_waveform {
-                    Some(Waveform::SINE) => Some(Waveform::SQUARE),
-                    Some(Waveform::SQUARE) => Some(Waveform::SAW),
-                    _ => Some(Waveform::SINE)
-                };
-
-                keyboard.set_current_waveform(current_waveform.as_ref().unwrap());
-                term.clear_screen().expect("TODO: panic message");
-                keyboard.draw(term);
+                handle_toggle_waveforms(term, keyboard, current_waveform);
             }
             Key::Char('1') => {
-                if filter_cutoff < FILTER_CUTOFF_UPPER_BOUND {
-                    filter_cutoff += 0.1;
-                    println!("Filter cutoff has been increased to {:?}", filter_cutoff)
-                } else {
-                    println!("Filter cutoff is too high: {:?}", filter_cutoff)
-                }
+                handle_increase_filter_cutoff(&mut filter_cutoff);
             }
             Key::Char('2') => {
-                if filter_cutoff > FILTER_CUTOFF_LOWER_BOUND {
-                    filter_cutoff -= 0.1;
-                    println!("Filter cutoff has been reduced to {:?}", filter_cutoff)
-                } else {
-                    println!("Filter cutoff is too low: {:?}", filter_cutoff)
-                }
+                handle_reduce_filter_cutoff(&mut filter_cutoff);
             }
             Key::Char('3') => {
-                filter_active = true;
-                println!("Low pass filter has been activated")
+                handle_activate_filter(&mut filter_active);
             }
             Key::Char('4') => {
-                if filter_resonance < FILTER_RESONANCE_UPPER_BOUND {
-                    filter_resonance += 0.1;
-                    println!("Filter resonance has been increased to {:?}", filter_resonance)
-                } else {
-                    println!("Filter resonance is too high: {:?}", filter_resonance)
-                }
+                handle_increase_filter_resonance(&mut filter_resonance);
             }
             Key::Char('5') => {
-                if filter_resonance > FILTER_RESONANCE_LOWER_BOUND {
-                    filter_resonance -= 0.1;
-                    println!("Filter resonance has been reduced to {:?}", filter_resonance)
-                } else {
-                    println!("Filter resonance is too low: {:?}", filter_resonance)
-                }
+                handle_reduce_filter_resonance(&mut filter_resonance);
             }
             Key::Char('z') | Key::Char('Z') => {
-                // Quit the program
-                println!("Quitting...");
                 break;
             }
             _ => {}
@@ -117,6 +78,75 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
         // Pause the thread to mitigate CPU overload
         thread::sleep(Duration::from_millis(10));
     }
+}
+
+fn handle_activate_filter(filter_active: &mut bool) {
+    *filter_active = true;
+    println!("Low pass filter has been activated")
+}
+
+fn handle_increase_filter_cutoff(filter_cutoff: &mut f32) {
+    if *filter_cutoff < FILTER_CUTOFF_UPPER_BOUND {
+        *filter_cutoff += 0.1;
+        println!("Filter cutoff has been increased to {:?}", filter_cutoff)
+    } else {
+        println!("Filter cutoff is too high: {:?}", filter_cutoff)
+    }
+}
+
+fn handle_reduce_filter_cutoff(filter_cutoff: &mut f32) {
+    if *filter_cutoff > FILTER_CUTOFF_LOWER_BOUND {
+        *filter_cutoff -= 0.1;
+        println!("Filter cutoff has been reduced to {:?}", filter_cutoff)
+    } else {
+        println!("Filter cutoff is too low: {:?}", filter_cutoff)
+    }
+}
+
+fn handle_increase_filter_resonance(filter_resonance: &mut f32) {
+    if *filter_resonance < FILTER_RESONANCE_UPPER_BOUND {
+        *filter_resonance += 0.1;
+        println!("Filter resonance has been increased to {:?}", filter_resonance)
+    } else {
+        println!("Filter resonance is too high: {:?}", filter_resonance)
+    }
+}
+
+fn handle_reduce_filter_resonance(filter_resonance: &mut f32) {
+    if *filter_resonance > FILTER_RESONANCE_LOWER_BOUND {
+        *filter_resonance -= 0.1;
+        println!("Filter resonance has been reduced to {:?}", filter_resonance)
+    } else {
+        println!("Filter resonance is too low: {:?}", filter_resonance)
+    }
+}
+
+fn handle_toggle_waveforms(term: &mut Term, keyboard: &mut Keyboard, mut current_waveform: Option<Waveform>) {
+    current_waveform = match current_waveform {
+        Some(Waveform::SINE) => Some(Waveform::SQUARE),
+        Some(Waveform::SQUARE) => Some(Waveform::SAW),
+        _ => Some(Waveform::SINE)
+    };
+
+    keyboard.set_current_waveform(current_waveform.as_ref().unwrap());
+    term.clear_screen().expect("handle_toggle_waveforms has panicked!");
+    keyboard.draw(term);
+}
+
+fn handle_increase_octave(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard) {
+    let new_octave = &octave.value + 1;
+    octave.value = new_octave;
+    keyboard.set_current_octave(&octave.value);
+    term.clear_screen().expect("handle_increase_octave has panicked!");
+    keyboard.draw(term);
+}
+
+fn handle_reduce_octave(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard) {
+    let new_octave = &octave.value - 1;
+    octave.value = new_octave;
+    keyboard.set_current_octave(&octave.value);
+    term.clear_screen().expect("handle_reduce_octave has panicked!");
+    keyboard.draw(term);
 }
 
 fn handle_musical_notes(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard, sink: &mut Sink,
@@ -135,7 +165,7 @@ fn handle_musical_notes(octave: &mut Octave, term: &mut Term, keyboard: &mut Key
     };
 
     // Draw the initial keyboard layout
-    term.clear_screen().expect("TODO: panic message");
+    term.clear_screen().expect("handle_musical_notes has panicked!");
 
     // Simulate handling a key press (replace this with your actual key press handling logic)
     keyboard.handle_key_press(key);
