@@ -52,7 +52,7 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
                 handle_increase_octave(octave, term, keyboard);
             }
             Key::Char('f') | Key::Char('F') => {
-                handle_toggle_waveforms(term, keyboard, current_waveform);
+                handle_toggle_waveforms(term, keyboard, &mut current_waveform);
             }
             Key::Char('1') => {
                 handle_increase_filter_cutoff(&mut filter_cutoff);
@@ -121,8 +121,8 @@ fn handle_reduce_filter_resonance(filter_resonance: &mut f32) {
     }
 }
 
-fn handle_toggle_waveforms(term: &mut Term, keyboard: &mut Keyboard, mut current_waveform: Option<Waveform>) {
-    current_waveform = match current_waveform {
+fn handle_toggle_waveforms(term: &mut Term, keyboard: &mut Keyboard, current_waveform: &mut Option<Waveform>) {
+    *current_waveform = match current_waveform {
         Some(Waveform::SINE) => Some(Waveform::SQUARE),
         Some(Waveform::SQUARE) => Some(Waveform::SAW),
         _ => Some(Waveform::SINE)
@@ -152,6 +152,7 @@ fn handle_reduce_octave(octave: &mut Octave, term: &mut Term, keyboard: &mut Key
 fn handle_musical_notes(octave: &mut Octave, term: &mut Term, keyboard: &mut Keyboard, sink: &mut Sink,
                         current_waveform: &mut Option<Waveform>, filter_active: &mut bool,
                         filter_cutoff: &mut f32, filter_resonance: &mut f32, key: Key) {
+
     let note = match key {
         // Map keys to musical notes
         Key::Char('q') | Key::Char('Q') => Note::A,

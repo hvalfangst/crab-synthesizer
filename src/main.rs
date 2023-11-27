@@ -19,11 +19,11 @@ fn main() {
 
     // Initialize the audio output stream and sink
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let sink = &mut Sink::try_new(&stream_handle).unwrap();
+    let mut sink = Sink::try_new(&stream_handle).unwrap();
 
     // Draw the keyboard
     let mut keyboard = Keyboard::new();
 
     // Execute the main event loop, which handles user input and associated sound generation
-    execute_event_loop(&mut octave, term, &mut keyboard, sink);
+    execute_event_loop(&mut octave, term, &mut keyboard, &mut sink);
 }
