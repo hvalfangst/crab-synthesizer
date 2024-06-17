@@ -7,6 +7,8 @@ edition = "2021"
 rodio = "0.17.1"
 console = "0.15.7"
 rand = "0.8"
+minifb = "0.21.0"
+image = "0.24.6"
 
 [[bin]]
 name = "synthesizer"

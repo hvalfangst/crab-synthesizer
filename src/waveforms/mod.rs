@@ -7,7 +7,7 @@ pub mod saw_wave;
 const MONO: u16 = 1;
 const SAMPLE_RATE: f32 = 48000.0;
 pub const AMPLITUDE: f32 = 0.20;
-pub const DURATION: f32 = 0.29;
+pub const DURATION: f32 = 0.19;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Waveform {

@@ -1,6 +1,8 @@
 use std::thread;
 use std::time::Duration;
 use console::{Key, Term};
+use minifb::{Key as key2, Window, WindowOptions};
+use image::GenericImageView;
 use rodio::{Sink, source::Source};
 use crate::{music_theory::{
     note::Note,
@@ -30,53 +32,84 @@ pub fn execute_event_loop(octave: &mut Octave, term: &mut Term, keyboard: &mut K
     let mut filter_cutoff: f32 = 0.0;
     let mut filter_resonance: f32 = 0.0;
 
-    loop {
-        // Read a key from the terminal
-        let key = term.read_key().unwrap();
+    // Load the first image
+    let img1 = image::open("assets/sine_key_0.png").expect("Failed to open key_0");
+    let (width1, height1) = img1.dimensions();
+    let buffer1: Vec<u32> = img_to_buffer(&img1);
 
-        // Match the pressed key to musical notes and perform actions accordingly
-        match key {
-            Key::Char('q') | Key::Char('Q')
-            | Key::Char('w') | Key::Char('W')
-            | Key::Char('e') | Key::Char('E')
-            | Key::Char('r') | Key::Char('R')
-            | Key::Char('t') | Key::Char('T')
-            | Key::Char('y') | Key::Char('Y')
-            | Key::Char('u') | Key::Char('U') => {
-                handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, key);
-            }
-            Key::Char('o') | Key::Char('O') => {
-                handle_reduce_octave(octave, term, keyboard);
-            }
-            Key::Char('p') | Key::Char('P') => {
-                handle_increase_octave(octave, term, keyboard);
-            }
-            Key::Char('f') | Key::Char('F') => {
-                handle_toggle_waveforms(term, keyboard, &mut current_waveform);
-            }
-            Key::Char('1') => {
-                handle_increase_filter_cutoff(&mut filter_cutoff);
-            }
-            Key::Char('2') => {
-                handle_reduce_filter_cutoff(&mut filter_cutoff);
-            }
-            Key::Char('3') => {
-                handle_activate_filter(&mut filter_active);
-            }
-            Key::Char('4') => {
-                handle_increase_filter_resonance(&mut filter_resonance);
-            }
-            Key::Char('5') => {
-                handle_reduce_filter_resonance(&mut filter_resonance);
-            }
-            Key::Char('z') | Key::Char('Z') => {
-                break;
-            }
-            _ => {}
+    // Load the second image
+    let img2 = image::open("assets/sine_key_1.png").expect("Failed to open key_1");
+    let (width2, height2) = img2.dimensions();
+    let buffer2: Vec<u32> = img_to_buffer(&img2);
+
+    // Load the third image
+    let img3 = image::open("assets/sine_key_2.png").expect("Failed to open key_2");
+    let (width3, height3) = img3.dimensions();
+    let buffer3: Vec<u32> = img_to_buffer(&img3);
+
+    // Load the third image
+    let img4 = image::open("assets/sine_key_3.png").expect("Failed to open key_3");
+    let (width4, height4) = img4.dimensions();
+    let buffer4: Vec<u32> = img_to_buffer(&img4);
+
+    // Load the third image
+    let img5 = image::open("assets/sine_key_4.png").expect("Failed to open key_4");
+    let (width5, height5) = img5.dimensions();
+    let buffer5: Vec<u32> = img_to_buffer(&img5);
+
+    // Load the third image
+    let img6 = image::open("assets/sine_key_5.png").expect("Failed to open key_5");
+    let (width6, height6) = img6.dimensions();
+    let buffer6: Vec<u32> = img_to_buffer(&img6);
+
+    let img7 = image::open("assets/sine_key_6.png").expect("Failed to open key_6");
+    let (width7, height7) = img7.dimensions();
+    let buffer7: Vec<u32> = img_to_buffer(&img7);
+
+    let img8 = image::open("assets/sine_key_7.png").expect("Failed to open key_7");
+    let (width8, height8) = img8.dimensions();
+    let buffer8: Vec<u32> = img_to_buffer(&img8);
+
+    // Create a window
+    let mut window = Window::new(
+        "Image Display",
+        width1 as usize,
+        height1 as usize,
+        WindowOptions::default(),
+    ).unwrap_or_else(|e| {
+        panic!("{}", e);
+    });
+
+    let mut current_buffer = &buffer1;
+
+    // Display the images alternately based on key press
+    while window.is_open() && !window.is_key_down(key2::Escape) {
+        if window.is_key_pressed(key2::Q, minifb::KeyRepeat::No) {
+            current_buffer = &buffer2;
+            handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, Key::Char('q'));
+        } else if window.is_key_pressed(key2::W, minifb::KeyRepeat::No) {
+            current_buffer = &buffer3;
+            handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, Key::Char('w'));
+        } else if window.is_key_pressed(key2::E, minifb::KeyRepeat::No) {
+            current_buffer = &buffer4;
+            handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, Key::Char('e'));
+        } else if window.is_key_pressed(key2::R, minifb::KeyRepeat::No) {
+            current_buffer = &buffer5;
+            handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, Key::Char('r'));
+        } else if window.is_key_pressed(key2::T, minifb::KeyRepeat::No) {
+            current_buffer = &buffer6;
+            handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, Key::Char('t'));
+        } else if window.is_key_pressed(key2::Y, minifb::KeyRepeat::No) {
+            current_buffer = &buffer7;
+            handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, Key::Char('y'));
+        } else if window.is_key_pressed(key2::U, minifb::KeyRepeat::No) {
+            current_buffer = &buffer8;
+            handle_musical_notes(octave, term, keyboard, sink, &mut current_waveform, &mut filter_active, &mut filter_cutoff, &mut filter_resonance, Key::Char('u'));
+        } else if window.is_key_pressed(key2::F, minifb::KeyRepeat::No) {
+            current_buffer = &buffer6;
+            handle_toggle_waveforms(term, keyboard, &mut current_waveform);
         }
-
-        // Pause the thread to mitigate CPU overload
-        thread::sleep(Duration::from_millis(10));
+        window.update_with_buffer(current_buffer, width1 as usize, height1 as usize).unwrap();
     }
 }
 
@@ -168,11 +201,11 @@ fn handle_musical_notes(octave: &mut Octave, term: &mut Term, keyboard: &mut Key
     // Draw the initial keyboard layout
     term.clear_screen().expect("handle_musical_notes has panicked!");
 
-    // Simulate handling a key press (replace this with your actual key press handling logic)
-    keyboard.handle_key_press(key);
+    // Simulate handling a key press
+    //keyboard.handle_key_press(key);
 
     // Draw the updated keyboard layout after the key press
-    keyboard.draw(term);
+    //keyboard.draw(term);
 
     // Initialize Synth based on currently Enum
     let synth = match current_waveform {
@@ -210,4 +243,14 @@ fn handle_musical_notes(octave: &mut Octave, term: &mut Term, keyboard: &mut Key
 
     // Append the sound source to the audio sink for playback
     let _result = sink.append(source);
+}
+
+fn img_to_buffer(img: &image::DynamicImage) -> Vec<u32> {
+    let mut buffer: Vec<u32> = Vec::with_capacity((img.width() * img.height()) as usize);
+    for pixel in img.to_rgba8().pixels() {
+        let rgba = pixel.0;
+        let value = ((rgba[0] as u32) << 16) | ((rgba[1] as u32) << 8) | (rgba[2] as u32);
+        buffer.push(value);
+    }
+    buffer
 }
