@@ -51,10 +51,3 @@ impl Note {
         base_frequency * 2.0_f32.powi(octave.value - 4)
     }
 }
-
-/// # Returns
-///
-/// An array containing all note enums [A -> G]
-pub fn get_all_notes() -> [Note; 7] {
-    [Note::A, Note::B, Note::C, Note::D, Note::E, Note::F, Note::G]
-}

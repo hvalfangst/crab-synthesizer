@@ -1,20 +1,18 @@
 use rodio::Source;
 use std::{f32::consts::PI, time::Duration};
 use crate::{
-    effects::low_pass_filter::LowPassFilter,
     waveforms::{MONO, SAMPLE_RATE}
 };
 
 #[derive(Debug)]
 pub struct SineWave {
     freq: f32,
-    num_sample: usize,
-    pub filter: LowPassFilter
+    num_sample: usize
 }
 
 impl SineWave {
     pub fn new(freq: f32) -> SineWave {
-        SineWave { freq, num_sample: 0, filter: LowPassFilter::new() }
+        SineWave { freq, num_sample: 0 }
     }
     pub fn generate_sine_wave(&mut self) -> f32 {
         calculate_sine(self.freq, self.num_sample)
@@ -28,14 +26,7 @@ impl Iterator for SineWave {
         // increment sample counter by 1
         self.num_sample = self.num_sample.wrapping_add(1);
         let sine_wave = self.generate_sine_wave();
-
-        // Only apply low-pass filter if it is indeed active
-        if self.filter.filter_active() {
-            self.filter.filtered_value = sine_wave * self.filter.low_pass_filter();
-            Some(self.filter.filtered_value)
-        } else {
-            Some(sine_wave)
-        }
+        Some(sine_wave)
     }
 }
 

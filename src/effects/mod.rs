@@ -1,6 +1,0 @@
-pub mod low_pass_filter;
-
-pub const FILTER_CUTOFF_UPPER_BOUND: f32 = 0.91;
-pub const FILTER_CUTOFF_LOWER_BOUND: f32 = 0.11;
-pub const FILTER_RESONANCE_UPPER_BOUND: f32 = 0.41;
-pub const FILTER_RESONANCE_LOWER_BOUND: f32 = 0.11;

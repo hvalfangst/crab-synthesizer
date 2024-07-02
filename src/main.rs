@@ -8,14 +8,11 @@ use crate::{
     },
 };
 
-mod waveforms;mod state;mod music_theory; mod effects;
+mod waveforms;mod state;mod music_theory;mod graphics;
 
 fn main() {
     // Set the initial octave value to 4
     let mut octave = Octave { value: 4 };
-
-    // Initialize a console terminal for user interaction
-    let term = &mut Term::stdout();
 
     // Initialize the audio output stream and sink
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
@@ -25,5 +22,5 @@ fn main() {
     let mut keyboard = Keyboard::new();
 
     // Execute the main event loop, which handles user input and associated sound generation
-    execute_event_loop(&mut octave, term, &mut keyboard, &mut sink);
+    execute_event_loop(&mut octave, &mut keyboard, &mut sink);
 }
