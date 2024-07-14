@@ -19,8 +19,7 @@ impl fmt::Display for Waveform {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Waveform::SINE => write!(f, "Sine"),
-            Waveform::SQUARE => write!(f, "Square"),
-            _ => write!(f, "Saw")
+            Waveform::SQUARE => write!(f, "Square")
         }
     }
 }

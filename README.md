@@ -1,31 +1,56 @@
-# Rust Synthesizer
+# Rust Synthesizer with GUI
 
 
 ## Requirements
-
-* x86-64
-* Linux/Unix
 * [Rust](https://www.rust-lang.org/tools/install)
 
 ## Cargo dependencies
-* rodio = "0.17.1"
-* console = "0.15.7"
-* rand = "0.8"
 
-## Start
+* [rodio](https://crates.io/crates/rodio)
+* [rand](https://crates.io/crates/rand)
+* [minifb](https://crates.io/crates/minifb)
+* [image](https://crates.io/crates/image)
 
-The script "up" builds and runs our application by executing the following:
+## Running program: Cargo
+
+The shell script 'up' builds and runs our application by executing the following:
 ```
 1. cargo build
 2. cargo run
 ```
 
-## Usage
-![img.png](img.png)
+## Running program: Binary
 
-You can interact with the synthesizer using the following keys:
+One may also run an executable directly. This has been compiled on my x86-64 machine.
+```
+./synthesizer.exe
+```
 
-    Q, W, E, R, T, Y, U: Play musical notes A, B, C, D, E, F, G respectively.
-    F1: Decrease the octave.
-    F2: Increase the octave.
-    F: Change the synthesizer waveform (sine, square, saw).
+
+## Screenshot
+![screenshot](rust_synthesizer_screenshot.png)
+
+## Synthesizer Key Controls
+Musical Notes:
+
+    Q: Play musical note C in octave 4 (261.63 Hz)
+    2: Play musical note C# in octave 4 (277.18 Hz)
+    W: Play musical note D in octave 4 (293.66 Hz)
+    3: Play musical note D# in octave 4 (311.13 Hz)
+    E: Play musical note E in octave 4 (329.63 Hz)
+    R: Play musical note F in octave 4 (349.23 Hz)
+    5: Play musical note F# in octave 4 (369.99 Hz)
+    T: Play musical note G (Base Frequency: 392.00 Hz)
+    6: Play musical note G# in octave 4 (415.30 Hz)
+    Y: Play musical note A in octave 4 (440.00 Hz)
+    7: Play musical note A# in octave 4 (466.16 Hz)
+    U: Play musical note B in octave 4 (493.88 Hz)
+
+Octave Control:
+
+    F1: Decrease the octave (1 is minimum)
+    F2: Increase the octave (5 is maximum)
+
+Waveform Control:
+
+    F: Toggle waveform between sine and square

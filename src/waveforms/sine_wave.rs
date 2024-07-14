@@ -50,12 +50,11 @@ impl Source for SineWave {
 }
 
 ///  The formula for calculating a sine wave is 'y(t) = sin(2πft)', whereby:
-/// '2πf' is two times pi times the frequency (ie 440 hz)
-/// 't' is time in seconds in relation to the sample rate (ie 1/48k)
+/// '2πf' is two times pi the frequency (ie 2 * 3.14~ * 440 hz)
+/// 't' is time in seconds in relation to the sample rate (1/48k = 2.08333×10−5 seconds)
 pub fn calculate_sine(frequency: f32, num_sample: usize) -> f32 {
     // Calculate time in seconds based on the sample number and the sample rate
     let time: f32 = num_sample as f32 / SAMPLE_RATE;
-
     // Calculate angular frequency (2πf)
     let angular_frequency: f32 = 2.0 * PI * frequency;
 

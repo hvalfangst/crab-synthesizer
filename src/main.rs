@@ -1,13 +1,13 @@
-use console::Term;
 use rodio::{OutputStream, Sink};
+
 use crate::{
     music_theory::note::Octave,
     state::{
-        event_loop::execute_event_loop,
-        keyboard::Keyboard
+        event_loop::start_event_loop,
+        keyboard::Keyboard,
     },
+    graphics::sprite::Sprites
 };
-
 mod waveforms;mod state;mod music_theory;mod graphics;
 
 fn main() {
@@ -18,9 +18,12 @@ fn main() {
     let (_stream, stream_handle) = OutputStream::try_default().unwrap();
     let mut sink = Sink::try_new(&stream_handle).unwrap();
 
-    // Draw the keyboard
+    // Instantiate the Keyboard struct
     let mut keyboard = Keyboard::new();
 
+    // Instantiate the Sprites struct
+    let sprites = Sprites::new();
+
     // Execute the main event loop, which handles user input and associated sound generation
-    execute_event_loop(&mut octave, &mut keyboard, &mut sink);
+    start_event_loop(&mut octave, &mut keyboard, &mut sink, &sprites);
 }
