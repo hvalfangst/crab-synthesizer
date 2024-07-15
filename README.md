@@ -19,9 +19,10 @@ The shell script 'up' builds and runs our application by executing the following
 2. cargo run
 ```
 
-## Running program: Binary
+## Running program: x86 executable for Windows
 
-One may also run an executable directly. This has been compiled on my x86-64 machine.
+One may also run an executable directly. This has been compiled for target 'x86_64-pc-windows-msvc'
+utilizing 'cargo build --release'
 ```
 ./synthesizer.exe
 ```
@@ -40,7 +41,7 @@ Musical Notes:
     E: Play musical note E in octave 4 (329.63 Hz)
     R: Play musical note F in octave 4 (349.23 Hz)
     5: Play musical note F# in octave 4 (369.99 Hz)
-    T: Play musical note G (Base Frequency: 392.00 Hz)
+    T: Play musical note G in octave 4 (392.00 Hz)
     6: Play musical note G# in octave 4 (415.30 Hz)
     Y: Play musical note A in octave 4 (440.00 Hz)
     7: Play musical note A# in octave 4 (466.16 Hz)

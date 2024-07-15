@@ -1,11 +1,7 @@
 use std::fmt;
 
-pub struct Octave {
-    pub value: i32
-}
-
-/// Enumerates musical notes A through G#
-#[derive(Debug)]
+/// Enumerates musical notes C4 through B5
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Note {
     C,
     CSharp,
@@ -20,7 +16,6 @@ pub enum Note {
     ASharp,
     B
 }
-
 
 /// Implements the [Display] trait for [Note]
 impl fmt::Display for Note {
@@ -52,7 +47,7 @@ impl Note {
     /// # Returns
     ///
     /// The adjusted frequency of the note.rs based on the current octave.
-    pub fn frequency(&self, octave: &Octave) -> f32 {
+    pub fn frequency(&self, octave: i32) -> f32 {
         let base_frequency = match self {
             Note::C => 261.63,
             Note::CSharp => 277.18,
@@ -69,6 +64,6 @@ impl Note {
         };
 
         // Adjust the base frequency based on the current octave setting
-        base_frequency * 2.0_f32.powi(octave.value - 4)
+        base_frequency * 2.0_f32.powi(octave - 4)
     }
 }
