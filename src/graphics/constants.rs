@@ -1,11 +1,6 @@
 // Constants for window dimensions
-pub const WINDOW_WIDTH: usize = 640;
-pub const WINDOW_HEIGHT: usize = 480;
-
-// Constants for tile dimensions
-pub const TILE_WIDTH: usize = 64;
-pub const TILE_HEIGHT: usize = 48;
-pub const TANGENT_WIDTH: usize = 30;
+pub const WINDOW_WIDTH: usize = 575;
+pub const WINDOW_HEIGHT: usize = 496;
 
 // Constants for waveforms
 pub const WAVEFORM_SINE: usize = 0;

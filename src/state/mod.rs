@@ -12,7 +12,7 @@ pub mod event_loop;
 const FRAME_DURATION: Duration = Duration::from_millis(16); // Approximately 60Hz refresh rate
 
 // Synthesizer State Struct
-pub struct SynthesizerState {
+pub struct State {
     octave: i32,
     waveform: Waveform,
     pressed_key: Option<(Key, Note)>,
@@ -20,9 +20,9 @@ pub struct SynthesizerState {
 }
 
 // Initialize Synthesizer State
-impl SynthesizerState {
+impl State {
     pub(crate) fn new() -> Self {
-        SynthesizerState {
+        State {
             octave: 4, // Set default octave to 4
             waveform: Waveform::SINE, // Set default waveform to Sine
             pressed_key: None, // Default is no key

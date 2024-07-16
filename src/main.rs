@@ -1,7 +1,7 @@
 use rodio::{OutputStream, Sink};
 
 use crate::{
-    state::{event_loop::start_event_loop, SynthesizerState},
+    state::{event_loop::start_event_loop, State},
     graphics::sprites::Sprites
 };
 
@@ -17,7 +17,7 @@ fn main() {
     let sprites = Sprites::new();
 
     // Instantiate the state struct with default values for octave and waveform
-    let mut state = SynthesizerState::new();
+    let mut state = State::new();
 
     // Execute the main event loop, which handles user input and associated sound generation
     start_event_loop(&mut state, &mut sink, &sprites);

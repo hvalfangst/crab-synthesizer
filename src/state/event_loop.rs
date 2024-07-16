@@ -18,13 +18,10 @@ use crate::{
         square_wave::SquareWave,
         Waveform,
     },
-    state::{FRAME_DURATION, SynthesizerState},
+    state::{FRAME_DURATION, State},
 };
 
 /// Starts the event loop for the synthesizer application, handling user input and rendering visuals.
-///
-/// This function initializes a window, listens for user input, updates visual and audio states
-/// based on key presses, and renders the updated visuals to the window.
 ///
 /// # Parameters
 /// - `state`: Mutable reference to `SynthesizerState`, which manages the current state of the synthesizer.
@@ -37,20 +34,19 @@ use crate::{
 /// - Updates the visual representation of the synthesizer based on the current state.
 /// - Renders the updated visual buffer onto the window.
 /// - Maintains a frame rate of approximately 60 frames per second by calculating necessary sleep time.
-pub fn start_event_loop(state: &mut SynthesizerState, sink: &mut Sink, sprites: &Sprites) {
-    // Calculate grid dimensions based on tile size
-    let grid_width = WINDOW_WIDTH / TILE_WIDTH;
-    let grid_height = WINDOW_HEIGHT / TILE_HEIGHT;
-
+pub fn start_event_loop(state: &mut State, sink: &mut Sink, sprites: &Sprites) {
     // Create a window with error handling
     let mut window = Window::new(
-        "Rust Synthesizer 0.25",
+        "Rust Synthesizer 0.5",
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
         WindowOptions::default(),
     ).unwrap_or_else(|e| {
         panic!("{}", e); // Panic if window creation fails
     });
+
+    let mut rack_index = 0; // Default rack sprite index
+    let mut last_rack_change = Instant::now(); // Records time of last rack index change
 
     // Initialize window buffer to store pixel data
     let mut window_buffer = vec![0; WINDOW_WIDTH * WINDOW_HEIGHT];
@@ -62,8 +58,14 @@ pub fn start_event_loop(state: &mut SynthesizerState, sink: &mut Sink, sprites: 
         // Handle user key presses to update synthesizer state and play sound
         handle_key_presses(state, &mut window, sink);
 
+        // Change rack index every 2 seconds by toggling between 0 and 1
+        if last_rack_change.elapsed() >= Duration::from_secs(2) {
+            rack_index = 1 - rack_index;
+            last_rack_change = Instant::now();
+        }
+
         // Update the pixel buffer with the current state visuals
-        update_buffer_with_state(state, sprites, &mut window_buffer, grid_width, grid_height);
+        update_buffer_with_state(state, sprites, &mut window_buffer, rack_index);
 
         // Draw the current buffer onto the window
         draw_buffer(&mut window, &mut window_buffer);
@@ -78,8 +80,6 @@ pub fn start_event_loop(state: &mut SynthesizerState, sink: &mut Sink, sprites: 
 
 /// Handles key presses for musical notes, waveform toggling, and octave adjustments.
 ///
-/// This function checks for specific key presses and updates the synthesizer state accordingly.
-///
 /// # Parameters
 /// - `state`: Mutable reference to the synthesizer state which holds current octave, waveform, and pressed key.
 /// - `window`: Mutable reference to the window object used to detect key presses.
@@ -90,11 +90,7 @@ pub fn start_event_loop(state: &mut SynthesizerState, sink: &mut Sink, sprites: 
 /// - Toggles between SINE and SQUARE waveform when the 'F' key is pressed.
 /// - Increases the octave when 'F2' key is pressed and the current octave is below the upper bound.
 /// - Decreases the octave when 'F1' key is pressed and the current octave is above the lower bound.
-///
-/// # Notes
-/// - The function uses the `handle_musical_note` function to produce sound for the pressed musical note.
-/// - State changes (waveform toggle, octave adjustments) directly modify the provided `state` reference.
-pub fn handle_key_presses(state: &mut SynthesizerState, window: &mut Window, sink: &mut Sink) {
+pub fn handle_key_presses(state: &mut State, window: &mut Window, sink: &mut Sink) {
     // Check for musical note key presses
     for (key, note, _, _) in get_key_mappings() {
         if window.is_key_pressed(key, KeyRepeat::No) {
@@ -123,29 +119,11 @@ pub fn handle_key_presses(state: &mut SynthesizerState, window: &mut Window, sin
 
 /// Handles playing a musical note with a specified octave, waveform, and duration.
 ///
-/// This function initializes a synthesizer based on the provided waveform and plays the corresponding musical note
-/// with the given octave, using a specified audio sink for playback.
-///
 /// # Parameters
 /// - `octave`: A mutable reference to the current octave of the synthesizer.
 /// - `sink`: A mutable reference to the audio sink where the sound will be played.
 /// - `current_waveform`: The waveform enum representing the type of waveform to use for synthesizing the sound.
 /// - `note`: The musical note (pitch) to be played.
-///
-/// # Example
-/// ```rust
-/// use std::time::Duration;
-/// use rodio::{Sink, Source};
-/// use your_module::{handle_musical_note, Octave, Waveform, Note};
-///
-/// let mut octave = Octave::default(); // Initialize octave
-/// let mut sink = Sink::new(); // Create audio sink
-/// let current_waveform = Waveform::SQUARE; // Choose waveform
-/// let note = Note::C; // Choose note
-///
-/// // Play the note with the given parameters
-/// handle_musical_note(&mut octave, &mut sink, current_waveform, note);
-/// ```
 fn handle_musical_note(octave: i32, sink: &mut Sink, current_waveform: Waveform, note: Note) {
 
     // Initialize Synth implementation based on Waveform enum
@@ -169,19 +147,15 @@ fn handle_musical_note(octave: i32, sink: &mut Sink, current_waveform: Waveform,
 
 /// Draws the current state of the synthesizer on the window buffer.
 ///
-/// This function first paints the background, then draws all idle keys and tangents.
-/// If a key is pressed (`state.pressed_key` is Some), it draws the corresponding note,
-/// octave, waveform, text, and potentially the pressed key sprite.
-///
 /// # Parameters
 /// - `state`: Reference to the current `SynthesizerState` containing the state of the synthesizer.
 /// - `sprites`: Reference to the `Sprites` struct containing all sprite data needed for drawing.
 /// - `window_buffer`: Mutable reference to the window buffer where pixels are drawn.
 /// - `grid_width`: Width of the grid in tiles.
 /// - `grid_height`: Height of the grid in tiles.
-fn update_buffer_with_state(state: &SynthesizerState, sprites: &Sprites, window_buffer: &mut Vec<u32>, grid_width: usize, grid_height: usize) {
+fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>, rack_index: usize) {
     // Draw background
-    fill_background(window_buffer, &sprites.background, grid_width, grid_height, WINDOW_WIDTH);
+    fill_background(sprites, window_buffer, WINDOW_WIDTH, rack_index);
 
     // Draw all idle keys first
     draw_idle_keys(sprites, window_buffer);
@@ -204,7 +178,6 @@ fn update_buffer_with_state(state: &SynthesizerState, sprites: &Sprites, window_
         draw_note_sprite(sprites, window_buffer, note_sprite_index);
         draw_current_octave_sprite(state, sprites, window_buffer);
         draw_current_waveform_sprite(state, sprites, window_buffer);
-        draw_text_sprite(sprites, window_buffer);
 
         // Draw pressed key sprite if the note is not a sharp
         if matches!(note, Note::A | Note::B | Note::C | Note::D | Note::E | Note::F | Note::G) {
