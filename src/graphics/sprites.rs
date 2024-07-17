@@ -30,7 +30,9 @@ pub struct Sprites {
     pub tangents: Vec<Sprite>,
     pub text: Vec<Sprite>,
     pub octave_knob: Vec<Sprite>,
-    pub rack: Vec<Sprite>
+    pub rack: Vec<Sprite>,
+    pub button: Vec<Sprite>,
+    pub display: Vec<Sprite>
 }
 
 impl Sprites {
@@ -43,9 +45,10 @@ impl Sprites {
             keys: load_sprites_from_map("assets/keys.png", 64, 144),
             tangents: load_sprites_from_map("assets/tangents.png", 30, 96),
             text: load_sprites_from_map("assets/text.png", 120, 60),
-            octave_knob: load_sprites_from_map("assets/octave_knob.png", 80, 80),
+            octave_knob: load_sprites_from_map("assets/knob.png", 64, 48),
+            button: load_sprites_from_map("assets/button.png", 64, 48),
+            display: load_sprites_from_map("assets/display.png", 128, 30),
             rack: load_sprites_from_map("assets/rack.png", 600, 496)
-
         }
     }
 }
@@ -81,6 +84,17 @@ pub fn fill_background(sprites: &Sprites, buffer: &mut [u32], window_width: usiz
     draw_sprite(0 * sprites.rack[0].width as usize,
                 0 * sprites.rack[0].height as usize,
                 &sprites.rack[rack_index], buffer, window_width);
+}
+
+
+/*draw_sprite((2 * sprites.numbers[0].width) as usize,
+5 * sprites.numbers[0].height as usize + 5,
+&sprites.numbers[state.get_current_octave() as usize], window_buffer, WINDOW_WIDTH);*/
+
+pub fn draw_display(sprites: &Sprites, buffer: &mut [u32], display_index: usize) {
+    draw_sprite(3 * sprites.numbers[0].width as usize,
+                5 * sprites.numbers[0].height as usize + 15,
+                &sprites.display[display_index], buffer, WINDOW_WIDTH);
 }
 
 /// Loads sprites from a sprite map image file into memory.
@@ -332,14 +346,27 @@ pub fn draw_current_waveform_sprite(state: &State, sprites: &Sprites, window_buf
 /// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
 pub fn draw_current_octave_sprite(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>) {
     draw_sprite((2 * sprites.numbers[0].width) as usize,
-                5 * sprites.numbers[0].height as usize,
+                5 * sprites.numbers[0].height as usize + 5,
                 &sprites.numbers[state.get_current_octave() as usize], window_buffer, WINDOW_WIDTH);
 }
 
-pub fn draw_current_octave_knob(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>) {
-    draw_sprite(0 * sprites.octave_knob[0].width as usize,
-                0 * sprites.octave_knob[0].height as usize,
-                &sprites.octave_knob[state.get_current_octave() as usize -3], window_buffer, WINDOW_WIDTH);
+/// Draws idle knobs
+///
+/// # Parameters
+/// - `sprites`: A reference to the `Sprites` struct containing all the sprite images.
+/// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
+pub fn draw_idle_knobs(sprites: &Sprites, window_buffer: &mut Vec<u32>) {
+    draw_sprite(5 * sprites.octave_knob[0].width as usize,
+                5 * sprites.octave_knob[0].height as usize + 5,
+                &sprites.octave_knob[0], window_buffer, WINDOW_WIDTH);
+
+    draw_sprite(6 * sprites.octave_knob[0].width as usize,
+                5 * sprites.octave_knob[0].height as usize + 5,
+                &sprites.octave_knob[0], window_buffer, WINDOW_WIDTH);
+
+    draw_sprite(7 * sprites.octave_knob[0].width as usize,
+                5 * sprites.octave_knob[0].height as usize + 5,
+                &sprites.octave_knob[0], window_buffer, WINDOW_WIDTH);
 }
 
 /// Draws the note sprite for the given note sprite index.
@@ -350,7 +377,7 @@ pub fn draw_current_octave_knob(state: &State, sprites: &Sprites, window_buffer:
 /// - `note_sprite_index`: The index of the note sprite to be drawn.
 pub fn draw_note_sprite(sprites: &Sprites, window_buffer: &mut Vec<u32>, note_sprite_index: usize) {
     draw_sprite(1 * sprites.notes[0].width as usize,
-                5 * sprites.notes[0].height as usize,
+                5 * sprites.notes[0].height as usize + 5,
                 &sprites.notes[note_sprite_index], window_buffer, WINDOW_WIDTH);
 }
 

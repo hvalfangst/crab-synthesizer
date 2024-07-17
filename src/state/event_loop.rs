@@ -48,6 +48,9 @@ pub fn start_event_loop(state: &mut State, sink: &mut Sink, sprites: &Sprites) {
     let mut rack_index = 0; // Default rack sprite index
     let mut last_rack_change = Instant::now(); // Records time of last rack index change
 
+    let mut display_index = 0; // Default display sprite index
+    let mut last_display_change = Instant::now(); // Records time of last display index change
+
     // Initialize window buffer to store pixel data
     let mut window_buffer = vec![0; WINDOW_WIDTH * WINDOW_HEIGHT];
 
@@ -64,8 +67,14 @@ pub fn start_event_loop(state: &mut State, sink: &mut Sink, sprites: &Sprites) {
             last_rack_change = Instant::now();
         }
 
+        // Change display index every 100 milliseconds, cycling from sprite index 0 to 14
+        if last_display_change.elapsed() >= Duration::from_millis(100) {
+            display_index = (display_index + 1) % 8;
+            last_display_change = Instant::now();
+        }
+
         // Update the pixel buffer with the current state visuals
-        update_buffer_with_state(state, sprites, &mut window_buffer, rack_index);
+        update_buffer_with_state(state, sprites, &mut window_buffer, rack_index, display_index);
 
         // Draw the current buffer onto the window
         draw_buffer(&mut window, &mut window_buffer);
@@ -153,7 +162,7 @@ fn handle_musical_note(octave: i32, sink: &mut Sink, current_waveform: Waveform,
 /// - `window_buffer`: Mutable reference to the window buffer where pixels are drawn.
 /// - `grid_width`: Width of the grid in tiles.
 /// - `grid_height`: Height of the grid in tiles.
-fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>, rack_index: usize) {
+fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>, rack_index: usize, display_index: usize) {
     // Draw background
     fill_background(sprites, window_buffer, WINDOW_WIDTH, rack_index);
 
@@ -177,7 +186,9 @@ fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer: &mu
         // Draw sprites
         draw_note_sprite(sprites, window_buffer, note_sprite_index);
         draw_current_octave_sprite(state, sprites, window_buffer);
+        draw_idle_knobs(sprites, window_buffer);
         draw_current_waveform_sprite(state, sprites, window_buffer);
+        draw_display(sprites, window_buffer, display_index);
 
         // Draw pressed key sprite if the note is not a sharp
         if matches!(note, Note::A | Note::B | Note::C | Note::D | Note::E | Note::F | Note::G) {
