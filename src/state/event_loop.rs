@@ -1,25 +1,15 @@
 use std::thread;
 use std::time::{Duration, Instant};
-use minifb::{Key as key, KeyRepeat, Window, WindowOptions};
-use rodio::{Sink, source::Source};
+
+use minifb::{Key as key, Window, WindowOptions};
+use rodio::Sink;
 
 use crate::{
     graphics::constants::*,
     graphics::sprites::*,
-    music_theory::{
-        note::Note,
-        OCTAVE_LOWER_BOUND,
-        OCTAVE_UPPER_BOUND,
-    },
-    waveforms::{
-        AMPLITUDE,
-        DURATION,
-        sine_wave::SineWave,
-        square_wave::SquareWave,
-        Waveform,
-    },
     state::{FRAME_DURATION, State},
 };
+use crate::state::utils::{draw_buffer, handle_key_presses, update_buffer_with_state};
 
 /// Starts the event loop for the synthesizer application, handling user input and rendering visuals.
 ///
@@ -67,9 +57,9 @@ pub fn start_event_loop(state: &mut State, sink: &mut Sink, sprites: &Sprites) {
             last_rack_change = Instant::now();
         }
 
-        // Change display index every 100 milliseconds, cycling from sprite index 0 to 14
-        if last_display_change.elapsed() >= Duration::from_millis(100) {
-            display_index = (display_index + 1) % 8;
+        // Change display index every 300 milliseconds, cycling from sprite index 0 to 5
+        if last_display_change.elapsed() >= Duration::from_millis(300) {
+            display_index = (display_index + 1) % 6;
             last_display_change = Instant::now();
         }
 
@@ -84,118 +74,5 @@ pub fn start_event_loop(state: &mut State, sink: &mut Sink, sprites: &Sprites) {
         if elapsed < FRAME_DURATION {
             thread::sleep(FRAME_DURATION - elapsed);
         }
-    }
-}
-
-/// Handles key presses for musical notes, waveform toggling, and octave adjustments.
-///
-/// # Parameters
-/// - `state`: Mutable reference to the synthesizer state which holds current octave, waveform, and pressed key.
-/// - `window`: Mutable reference to the window object used to detect key presses.
-/// - `sink`: Mutable reference to the audio sink where musical notes are played.
-///
-/// # Key Handling Logic
-/// - It iterates over predefined key mappings and triggers musical note generation when a corresponding key is pressed.
-/// - Toggles between SINE and SQUARE waveform when the 'F' key is pressed.
-/// - Increases the octave when 'F2' key is pressed and the current octave is below the upper bound.
-/// - Decreases the octave when 'F1' key is pressed and the current octave is above the lower bound.
-pub fn handle_key_presses(state: &mut State, window: &mut Window, sink: &mut Sink) {
-    // Check for musical note key presses
-    for (key, note, _, _) in get_key_mappings() {
-        if window.is_key_pressed(key, KeyRepeat::No) {
-            handle_musical_note(state.get_current_octave(), sink, state.get_current_waveform(), note);
-            state.pressed_key = Some((key, note));
-            return;
-        }
-    }
-
-    // Toggle the waveform between SINE and SQUARE when 'F' key is pressed
-    if window.is_key_pressed(key::F, KeyRepeat::No) {
-        state.toggle_waveform();
-    }
-
-    // Increase the octave when 'F2' key is pressed and the current octave is below the upper bound
-    if window.is_key_pressed(key::F2, KeyRepeat::No) && state.get_current_octave() < OCTAVE_UPPER_BOUND {
-        state.increase_octave();
-    }
-
-    // Decrease the octave when 'F1' key is pressed and the current octave is above the lower bound
-    if window.is_key_pressed(key::F1, KeyRepeat::No) && state.get_current_octave() > OCTAVE_LOWER_BOUND {
-        state.decrease_octave();
-    }
-}
-
-
-/// Handles playing a musical note with a specified octave, waveform, and duration.
-///
-/// # Parameters
-/// - `octave`: A mutable reference to the current octave of the synthesizer.
-/// - `sink`: A mutable reference to the audio sink where the sound will be played.
-/// - `current_waveform`: The waveform enum representing the type of waveform to use for synthesizing the sound.
-/// - `note`: The musical note (pitch) to be played.
-fn handle_musical_note(octave: i32, sink: &mut Sink, current_waveform: Waveform, note: Note) {
-
-    // Initialize Synth implementation based on Waveform enum
-    let synth = match current_waveform {
-        Waveform::SQUARE => {
-            let square_wave = SquareWave::new(note.frequency(octave));
-            Box::new(square_wave) as Box<dyn Source<Item=f32> + 'static + Send>
-        }
-        _ => {
-            let sine_wave = SineWave::new(note.frequency(octave));
-            Box::new(sine_wave) as Box<dyn Source<Item=f32> + 'static + Send>
-        }
-    };
-
-    // Create Source from our Synth
-    let source = synth.take_duration(Duration::from_secs_f32(DURATION)).amplify(AMPLITUDE);
-
-    // Append the sound source to the audio sink for playback
-    let _result = sink.append(source);
-}
-
-/// Draws the current state of the synthesizer on the window buffer.
-///
-/// # Parameters
-/// - `state`: Reference to the current `SynthesizerState` containing the state of the synthesizer.
-/// - `sprites`: Reference to the `Sprites` struct containing all sprite data needed for drawing.
-/// - `window_buffer`: Mutable reference to the window buffer where pixels are drawn.
-/// - `grid_width`: Width of the grid in tiles.
-/// - `grid_height`: Height of the grid in tiles.
-fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>, rack_index: usize, display_index: usize) {
-    // Draw background
-    fill_background(sprites, window_buffer, WINDOW_WIDTH, rack_index);
-
-    // Draw all idle keys first
-    draw_idle_keys(sprites, window_buffer);
-
-    // Create a map for tangent positions and their corresponding note constants
-    let tangent_map = create_tangent_map();
-
-    // Draw all tangents in their idle state first
-    draw_idle_tangents(sprites, window_buffer, &tangent_map);
-
-    // Check if a key is pressed
-    if let Some((_, note)) = &state.pressed_key {
-        // Get sprite index associated with the note to be drawn (A, C# etc.)
-        let note_sprite_index = get_note_sprite_index(note).unwrap_or_default();
-
-        // Get key position on the keyboard (0 would be the first key, 7 the last etc.)
-        let key_position = get_key_position(note).unwrap_or(0);
-
-        // Draw sprites
-        draw_note_sprite(sprites, window_buffer, note_sprite_index);
-        draw_current_octave_sprite(state, sprites, window_buffer);
-        draw_idle_knobs(sprites, window_buffer);
-        draw_current_waveform_sprite(state, sprites, window_buffer);
-        draw_display(sprites, window_buffer, display_index);
-
-        // Draw pressed key sprite if the note is not a sharp
-        if matches!(note, Note::A | Note::B | Note::C | Note::D | Note::E | Note::F | Note::G) {
-            draw_pressed_key_sprite(sprites, window_buffer, key_position);
-        }
-
-        // Draw idle and pressed tangents
-        draw_tangents(note_sprite_index, &tangent_map, sprites, window_buffer);
     }
 }

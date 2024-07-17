@@ -1,5 +1,9 @@
 # Rust Synthesizer with GUI
 
+Software synthesizer programmed in Rust using crates [rodio](https://crates.io/crates/rodio) for audio playback, 
+[minifb](https://crates.io/crates/minifb) for handling of user input 
+and [image](https://crates.io/crates/image) for sprite rendering. 
+All assets are made by me using [Aseprite](https://www.aseprite.org/).
 
 ## Requirements
 * [Rust](https://www.rust-lang.org/tools/install)
@@ -7,7 +11,6 @@
 ## Cargo dependencies
 
 * [rodio](https://crates.io/crates/rodio)
-* [rand](https://crates.io/crates/rand)
 * [minifb](https://crates.io/crates/minifb)
 * [image](https://crates.io/crates/image)
 
@@ -26,7 +29,6 @@ utilizing 'cargo build --release'
 ```
 ./synthesizer.exe
 ```
-
 
 ## Screenshot
 ![screenshot](rust_synthesizer_screenshot.png)

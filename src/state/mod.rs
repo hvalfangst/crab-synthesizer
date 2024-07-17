@@ -8,6 +8,7 @@ use crate::music_theory::note::Note;
 use crate::waveforms::Waveform;
 
 pub mod event_loop;
+mod utils;
 
 const FRAME_DURATION: Duration = Duration::from_millis(16); // Approximately 60Hz refresh rate
 
