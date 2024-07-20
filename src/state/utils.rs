@@ -256,7 +256,7 @@ pub fn draw_pressed_key_sprite(sprites: &Sprites, window_buffer: &mut Vec<u32>, 
 /// - `sprites`: A reference to the `Sprites` struct containing all the sprite images.
 /// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
 pub fn draw_octave_fader_sprite(octave: i32, sprites: &Sprites, window_buffer: &mut Vec<u32>) {
-    draw_sprite(8 * sprites.keys[KEY_PRESSED].width as usize,
+    draw_sprite(8 * sprites.keys[KEY_PRESSED].width as usize + 5,
                 2 * sprites.keys[KEY_PRESSED].height as usize,
                 &sprites.octave_fader[octave as usize], window_buffer, WINDOW_WIDTH);
 }
