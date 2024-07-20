@@ -51,8 +51,8 @@ Musical Notes:
 
 Octave Control:
 
-    F1: Decrease the octave (1 is minimum)
-    F2: Increase the octave (5 is maximum)
+    F1: Decrease the octave (0 is minimum)
+    F2: Increase the octave (6 is maximum)
 
 Waveform Control:
 
