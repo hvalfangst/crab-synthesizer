@@ -3,8 +3,8 @@ use std::fmt;
 pub mod sine_wave;
 pub mod square_wave;
 
-const MONO: u16 = 1;
-const SAMPLE_RATE: f32 = 48000.0;
+pub const MONO: u16 = 1;
+pub const SAMPLE_RATE: f32 = 48000.0;
 pub const AMPLITUDE: f32 = 0.20;
 pub const DURATION: f32 = 0.19;
 

@@ -28,7 +28,7 @@ impl Iterator for SquareWave {
         // Generates a sine wave
         let sine_wave: f32 = calculate_sine(self.freq, self.num_sample);
 
-        // Utilize a sign function to normalize our sine wave to [1.0, -1.0 or 0.0]
+        // Utilize a sign function to normalize our sine wave to [1.0 or -1.0]
         let square_wave: f32 = sgn(sine_wave);
 
         Some(square_wave)
@@ -59,7 +59,6 @@ impl Source for SquareWave {
 /// The signum function returns:
 /// - 1.0 if the number is positive,
 /// - -1.0 if the number is negative,
-/// - 0.0 if the number is zero.
 ///
 /// # Arguments
 ///

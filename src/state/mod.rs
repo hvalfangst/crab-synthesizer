@@ -18,6 +18,7 @@ pub struct State {
     waveform: Waveform,
     pressed_key: Option<(Key, Note)>,
     waveform_sprite_index: usize,
+    filter_cutoff: f32
 }
 
 // Initialize Synthesizer State
@@ -28,7 +29,13 @@ impl State {
             waveform: Waveform::SINE, // Set default waveform to Sine
             pressed_key: None, // Default is no key
             waveform_sprite_index: WAVEFORM_SINE, // Set default waveform sprite index to Sine
+            filter_cutoff: 0.0, // Set default cutoff to 0.0
         }
+    }
+
+    /// Multiplies the sample frequency with that of the filter cutoff coefficient
+    pub fn apply_lpf(&mut self, sample: f32) -> f32 {
+        sample * self.filter_cutoff
     }
 
     /// Increases the octave by one step, ensuring it does not exceed the upper bound.
@@ -42,6 +49,20 @@ impl State {
     pub fn decrease_octave(&mut self) {
         if self.octave > OCTAVE_LOWER_BOUND {
             self.octave -= 1;
+        }
+    }
+
+    /// Increases the filter cutoff
+    pub fn increase_filter_cutoff(&mut self) {
+        if self.filter_cutoff <= 0.9 {
+            self.filter_cutoff += 0.142857;
+        }
+    }
+
+    /// Decreases the filter cutoff
+    pub fn decrease_filter_cutoff(&mut self) {
+        if self.filter_cutoff >= 0.15 {
+            self.filter_cutoff -= 0.142857;
         }
     }
 
@@ -62,14 +83,5 @@ impl State {
                 Waveform::SINE
             },
         };
-    }
-
-    /// Returns the current waveform.
-    pub fn get_current_waveform(&self) -> Waveform {
-        self.waveform
-    }
-
-    pub fn get_current_waveform_sprite_index(&self) -> usize {
-        self.waveform_sprite_index
     }
 }

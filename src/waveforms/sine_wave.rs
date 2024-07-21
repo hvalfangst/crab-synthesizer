@@ -12,7 +12,7 @@ pub struct SineWave {
 
 impl SineWave {
     pub fn new(freq: f32) -> SineWave {
-        SineWave { freq, num_sample: 0 }
+        SineWave { freq, num_sample: 0}
     }
     pub fn generate_sine_wave(&mut self) -> f32 {
         calculate_sine(self.freq, self.num_sample)
@@ -25,7 +25,10 @@ impl Iterator for SineWave {
     fn next(&mut self) -> Option<f32> {
         // increment sample counter by 1
         self.num_sample = self.num_sample.wrapping_add(1);
+
+        // Generates a sine wave
         let sine_wave = self.generate_sine_wave();
+
         Some(sine_wave)
     }
 }

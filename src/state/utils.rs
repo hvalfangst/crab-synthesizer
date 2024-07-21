@@ -31,7 +31,7 @@ use crate::waveforms::square_wave::SquareWave;
         // Check for musical note key presses
         for (key, note, _, _) in get_key_mappings() {
             if window.is_key_pressed(key, KeyRepeat::No) {
-                handle_musical_note(state.get_current_octave(), sink, state.get_current_waveform(), note);
+                handle_musical_note(state, sink, note);
                 state.pressed_key = Some((key, note));
                 return;
             }
@@ -51,6 +51,17 @@ use crate::waveforms::square_wave::SquareWave;
     if window.is_key_pressed(Key::F1, KeyRepeat::No) && state.get_current_octave() > OCTAVE_LOWER_BOUND {
         state.decrease_octave();
     }
+
+    // Increase the filter cutoff coefficient when 'F4' key is pressed
+    if window.is_key_pressed(Key::F4, KeyRepeat::No) {
+        state.increase_filter_cutoff();
+    }
+
+    // Decrease the filter cutoff coefficient when 'F3' key is pressed
+    if window.is_key_pressed(Key::F3, KeyRepeat::No) {
+        state.decrease_filter_cutoff();
+    }
+
 }
 
 
@@ -61,16 +72,21 @@ use crate::waveforms::square_wave::SquareWave;
 /// - `sink`: A mutable reference to the audio sink where the sound will be played.
 /// - `current_waveform`: The waveform enum representing the type of waveform to use for synthesizing the sound.
 /// - `note`: The musical note (pitch) to be played.
-pub fn handle_musical_note(octave: i32, sink: &mut Sink, current_waveform: Waveform, note: Note) {
+pub fn handle_musical_note(state: &mut State, sink: &mut Sink, note: Note) {
+
+    // Compute the base frequency association with the note and octave
+    let base_frequency = note.frequency(state.octave);
 
     // Initialize Synth implementation based on Waveform enum
-    let synth = match current_waveform {
+    let synth = match state.waveform {
         Waveform::SQUARE => {
-            let square_wave = SquareWave::new(note.frequency(octave));
+            let filtered_frequency = state.apply_lpf(base_frequency);
+            let square_wave = SquareWave::new(filtered_frequency);
             Box::new(square_wave) as Box<dyn Source<Item=f32> + 'static + Send>
         }
         _ => {
-            let sine_wave = SineWave::new(note.frequency(octave));
+            let filtered_frequency = state.apply_lpf(base_frequency);
+            let sine_wave = SineWave::new(filtered_frequency);
             Box::new(sine_wave) as Box<dyn Source<Item=f32> + 'static + Send>
         }
     };
@@ -85,14 +101,14 @@ pub fn handle_musical_note(octave: i32, sink: &mut Sink, current_waveform: Wavef
 /// Draws the current state of the synthesizer on the window buffer.
 ///
 /// # Parameters
-/// - `state`: Reference to the current `SynthesizerState` containing the state of the synthesizer.
+/// - `state`: Reference to the current `State` containing the state of the synthesizer.
 /// - `sprites`: Reference to the `Sprites` struct containing all sprite data needed for drawing.
 /// - `window_buffer`: Mutable reference to the window buffer where pixels are drawn.
 /// - `grid_width`: Width of the grid in tiles.
 /// - `grid_height`: Height of the grid in tiles.
 pub fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>, rack_index: usize, display_index: usize) {
     // Draw rack
-    draw_rack_sprite(sprites, window_buffer, WINDOW_WIDTH, rack_index);
+    draw_rack_sprite(sprites, window_buffer, rack_index);
 
     // Draw all idle keys first
     draw_idle_key_sprites(sprites, window_buffer);
@@ -103,8 +119,11 @@ pub fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer:
     // Draw all tangents as overlay on key sprites in their idle state first
     draw_idle_tangent_sprites(sprites, window_buffer, &tangent_map);
 
-    // Draw idle knobs, which is are to be utilized for filter cutoff and resonance
-    draw_idle_knobs(sprites, window_buffer);
+    // Draw the cutoff knob for LPF
+    draw_filter_cutoff_knob_sprite(state, sprites, window_buffer);
+
+    // Draw the idle knob to the left of the cutoff knob for LPF
+    draw_idle_knob_sprite(sprites, window_buffer);
 
     // Draw octave fader, which display the current octave controlled by keys F1/F2
     draw_octave_fader_sprite(state.octave, sprites, window_buffer);
@@ -125,7 +144,7 @@ pub fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer:
         let key_position = get_key_position(note).unwrap_or(0);
 
         // Draw sprites note, knobs and the waveform display
-        draw_note_sprite(sprites, window_buffer, note_sprite_index);;
+        draw_note_sprite(sprites, window_buffer, note_sprite_index);
 
         // Draw pressed key sprite if the note is not a sharp
         if matches!(note, Note::A | Note::B | Note::C | Note::D | Note::E | Note::F | Note::G) {
@@ -220,7 +239,7 @@ pub fn create_tangent_map() -> HashMap<i32, usize> {
 /// # Parameters
 /// - `sprites`: A reference to the `Sprites` struct containing all the sprite images.
 /// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
-pub fn draw_rack_sprite(sprites: &Sprites, buffer: &mut [u32], window_width: usize, rack_index: usize) {
+pub fn draw_rack_sprite(sprites: &Sprites, buffer: &mut [u32], rack_index: usize) {
     draw_sprite(0 * sprites.rack[0].width as usize,
                 0 * sprites.rack[0].height as usize,
                 &sprites.rack[rack_index], buffer, WINDOW_WIDTH);
@@ -274,13 +293,35 @@ pub fn draw_buffer(window: &mut Window, window_buffer: &mut Vec<u32>) {
 /// Draws idle knobs.
 ///
 /// # Parameters
+/// - `state`: Reference to the current `State` containing the state of the synthesizer.
 /// - `sprites`: A reference to the `Sprites` struct containing all the sprite images.
 /// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
-pub fn draw_idle_knobs(sprites: &Sprites, window_buffer: &mut Vec<u32>) {
+pub fn draw_filter_cutoff_knob_sprite(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>) {
+    let filter_cutoff = state.filter_cutoff;
+
+    // Assigns the appropriate sprite index based on cutoff float value threshold
+    let knob_sprite_index = match filter_cutoff {
+        v if (0.0..=0.14).contains(&v) => 0,
+        v if (0.14..=0.28).contains(&v) => 1,
+        v if (0.28..=0.42).contains(&v) => 2,
+        v if (0.42..=0.57).contains(&v) => 3,
+        v if (0.57..=0.71).contains(&v) => 4,
+        v if (0.71..=0.85).contains(&v) => 5,
+        v if (0.85..=0.99).contains(&v) => 6,
+        _ => 7 // Last knob for ~0.99
+    };
+
     draw_sprite(6 * sprites.knob[0].width as usize,
                 5 * sprites.knob[0].height as usize - 10,
-                &sprites.knob[0], window_buffer, WINDOW_WIDTH);
+                &sprites.knob[knob_sprite_index], window_buffer, WINDOW_WIDTH);
+}
 
+/// Draws idle knob.
+///
+/// # Parameters
+/// - `sprites`: A reference to the `Sprites` struct containing all the sprite images.
+/// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
+pub fn draw_idle_knob_sprite(sprites: &Sprites, window_buffer: &mut Vec<u32>) {
     draw_sprite(7 * sprites.knob[0].width as usize,
                 5 * sprites.knob[0].height as usize - 10,
                 &sprites.knob[0], window_buffer, WINDOW_WIDTH);
