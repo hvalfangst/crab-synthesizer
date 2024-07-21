@@ -37,8 +37,8 @@ use crate::waveforms::square_wave::SquareWave;
             }
         }
 
-    // Toggle the waveform between SINE and SQUARE when 'F' key is pressed
-    if window.is_key_pressed(Key::F, KeyRepeat::No) {
+    // Toggle the waveform between SINE and SQUARE when 'S' key is pressed
+    if window.is_key_pressed(Key::S, KeyRepeat::No) {
         state.toggle_waveform();
     }
 
@@ -50,6 +50,11 @@ use crate::waveforms::square_wave::SquareWave;
     // Decrease the octave when 'F1' key is pressed and the current octave is above the lower bound
     if window.is_key_pressed(Key::F1, KeyRepeat::No) && state.get_current_octave() > OCTAVE_LOWER_BOUND {
         state.decrease_octave();
+    }
+
+    // Activate/Deactivate LPF (low pass filter) when 'F' key is pressed
+    if window.is_key_pressed(Key::F, KeyRepeat::No) {
+        state.toggle_lpf();
     }
 
     // Increase the filter cutoff coefficient when 'F4' key is pressed
@@ -107,6 +112,7 @@ pub fn handle_musical_note(state: &mut State, sink: &mut Sink, note: Note) {
 /// - `grid_width`: Width of the grid in tiles.
 /// - `grid_height`: Height of the grid in tiles.
 pub fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>, rack_index: usize, display_index: usize) {
+
     // Draw rack
     draw_rack_sprite(sprites, window_buffer, rack_index);
 
@@ -118,6 +124,9 @@ pub fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer:
 
     // Draw all tangents as overlay on key sprites in their idle state first
     draw_idle_tangent_sprites(sprites, window_buffer, &tangent_map);
+
+    // Draw the bulb
+    draw_bulb_sprite(state, sprites, window_buffer);
 
     // Draw the cutoff knob for LPF
     draw_filter_cutoff_knob_sprite(state, sprites, window_buffer);
@@ -137,6 +146,7 @@ pub fn update_buffer_with_state(state: &State, sprites: &Sprites, window_buffer:
 
     // Check if a key is pressed
     if let Some((_, note)) = &state.pressed_key {
+
         // Get sprite index associated with the note to be drawn (A, C# etc.)
         let note_sprite_index = get_note_sprite_index(note).unwrap_or_default();
 
@@ -288,6 +298,18 @@ pub fn draw_octave_fader_sprite(octave: i32, sprites: &Sprites, window_buffer: &
 /// - `window_buffer`: Mutable reference to a vector of `u32` representing the pixel data to be displayed.
 pub fn draw_buffer(window: &mut Window, window_buffer: &mut Vec<u32>) {
     window.update_with_buffer(&window_buffer, WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
+}
+
+/// Draws idle knobs.
+///
+/// # Parameters
+/// - `state`: Reference to the current `State` containing the state of the synthesizer.
+/// - `sprites`: A reference to the `Sprites` struct containing all the sprite images.
+/// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
+pub fn draw_bulb_sprite(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>) {
+    draw_sprite(6 * sprites.knob[0].width as usize,
+                5 * sprites.knob[0].height as usize + 10,
+                &sprites.bulb[state.lpf_active], window_buffer, WINDOW_WIDTH);
 }
 
 /// Draws idle knobs.

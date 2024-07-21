@@ -18,7 +18,8 @@ pub struct State {
     waveform: Waveform,
     pressed_key: Option<(Key, Note)>,
     waveform_sprite_index: usize,
-    filter_cutoff: f32
+    filter_cutoff: f32,
+    lpf_active: usize
 }
 
 // Initialize Synthesizer State
@@ -30,6 +31,7 @@ impl State {
             pressed_key: None, // Default is no key
             waveform_sprite_index: WAVEFORM_SINE, // Set default waveform sprite index to Sine
             filter_cutoff: 0.0, // Set default cutoff to 0.0
+            lpf_active: 0, // Default for LPF is deactivated
         }
     }
 
@@ -52,16 +54,22 @@ impl State {
         }
     }
 
+    /// Toggle LPF on/off
+    pub fn toggle_lpf(&mut self) {
+        self.lpf_active ^= 1;
+        self.filter_cutoff = 0.0;
+    }
+
     /// Increases the filter cutoff
     pub fn increase_filter_cutoff(&mut self) {
-        if self.filter_cutoff <= 0.9 {
+        if self.lpf_active == 1 && self.filter_cutoff <= 0.9 {
             self.filter_cutoff += 0.142857;
         }
     }
 
     /// Decreases the filter cutoff
     pub fn decrease_filter_cutoff(&mut self) {
-        if self.filter_cutoff >= 0.15 {
+        if self.lpf_active == 1 && self.filter_cutoff >= 0.15 {
             self.filter_cutoff -= 0.142857;
         }
     }

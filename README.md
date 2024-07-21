@@ -55,10 +55,11 @@ Octave Control:
     F2: Increase the octave (6 is maximum)
 
 Filter Control:
-
+    
+    F:  Turn low pass filter on/off     
     F3: Decrease the filter cutoff (0.15 is minimum)
     F4: Increase the filter cutoff (0.99 is maximum)
 
 Waveform Control:
 
-    F: Toggle waveform between sine and square
+    S: Toggle waveform between sine and square
