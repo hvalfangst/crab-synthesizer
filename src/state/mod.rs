@@ -18,7 +18,7 @@ pub struct State {
     waveform: Waveform,
     pressed_key: Option<(Key, Note)>,
     waveform_sprite_index: usize,
-    filter_cutoff: f32,
+    filter_factor: f32,
     lpf_active: usize
 }
 
@@ -30,14 +30,14 @@ impl State {
             waveform: Waveform::SINE, // Set default waveform to Sine
             pressed_key: None, // Default is no key
             waveform_sprite_index: WAVEFORM_SINE, // Set default waveform sprite index to Sine
-            filter_cutoff: 0.0, // Set default cutoff to 0.0
+            filter_factor: 1.0, // Set default cutoff to 1.0
             lpf_active: 0, // Default for LPF is deactivated
         }
     }
 
     /// Multiplies the sample frequency with that of the filter cutoff coefficient
     pub fn apply_lpf(&mut self, sample: f32) -> f32 {
-        sample * self.filter_cutoff
+        sample * self.filter_factor
     }
 
     /// Increases the octave by one step, ensuring it does not exceed the upper bound.
@@ -57,20 +57,20 @@ impl State {
     /// Toggle LPF on/off
     pub fn toggle_lpf(&mut self) {
         self.lpf_active ^= 1;
-        self.filter_cutoff = 0.0;
+        self.filter_factor = 1.0;
     }
 
     /// Increases the filter cutoff
     pub fn increase_filter_cutoff(&mut self) {
-        if self.lpf_active == 1 && self.filter_cutoff <= 0.9 {
-            self.filter_cutoff += 0.142857;
+        if self.lpf_active == 1 && self.filter_factor <= 0.9 {
+            self.filter_factor += 0.142857;
         }
     }
 
     /// Decreases the filter cutoff
     pub fn decrease_filter_cutoff(&mut self) {
-        if self.lpf_active == 1 && self.filter_cutoff >= 0.15 {
-            self.filter_cutoff -= 0.142857;
+        if self.lpf_active == 1 && self.filter_factor >= 0.15 {
+            self.filter_factor -= 0.142857;
         }
     }
 

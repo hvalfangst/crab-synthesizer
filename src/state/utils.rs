@@ -319,7 +319,7 @@ pub fn draw_bulb_sprite(state: &State, sprites: &Sprites, window_buffer: &mut Ve
 /// - `sprites`: A reference to the `Sprites` struct containing all the sprite images.
 /// - `window_buffer`: A mutable reference to the buffer representing the window's pixels.
 pub fn draw_filter_cutoff_knob_sprite(state: &State, sprites: &Sprites, window_buffer: &mut Vec<u32>) {
-    let filter_cutoff = state.filter_cutoff;
+    let filter_cutoff = state.filter_factor;
 
     // Assigns the appropriate sprite index based on cutoff float value threshold
     let knob_sprite_index = match filter_cutoff {
